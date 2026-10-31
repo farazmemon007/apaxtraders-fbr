@@ -542,6 +542,7 @@
                                                 </button>
                                                 <input type="hidden" name="customer" id="customer_id" value="{{ $sale->customer_id }}">
                                                 <input type="text" id="customer_name_display" class="form-control border-start-0 ps-0 fw-bold bg-white text-dark" readonly
+                                                    data-toggle="modal" data-target="#customerModal" style="cursor: pointer;"
                                                     value="{{ $sale->customer_relation->customer_name ?? 'Select Customer' }}">
                                             </div>
                                         </div>
@@ -554,6 +555,7 @@
                                                 </button>
                                                 <input type="hidden" name="sales_officer_id" id="sales_officer_id" value="{{ $sale->employee_id }}">
                                                 <input type="text" id="sales_officer_display" class="form-control border-start-0 ps-0 fw-bold bg-white text-dark" readonly
+                                                    data-toggle="modal" data-target="#officerModal" style="cursor: pointer;"
                                                     value="{{ $sale->employee->full_name ?? 'Select Sales Officer' }}">
                                             </div>
                                         </div>
@@ -1303,6 +1305,121 @@
                 importBookedItem(this);
                 $('#bookedProductsModal').modal('hide');
                 if (window.ERPImportLoader) window.ERPImportLoader.success();
+            });
+
+            // --- Customer & Officer Selection Handlers ---
+            $(document).on('click', '.btn-select-customer', function() {
+                let id = $(this).data('id');
+                let name = $(this).data('name');
+                $('#customer_id').val(id).trigger('change');
+                $('#customer_name_display').val(name);
+                $('#customerModal').modal('hide');
+
+                // Filter booked products if any
+                if (id) {
+                    $('.booked-item-row').each(function() {
+                        let rowCustId = $(this).find('.btn-import-single').attr('data-customer-id') || $(this).data('customer-id');
+                        if (!rowCustId || rowCustId == id) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                } else {
+                    $('.booked-item-row').show();
+                }
+            });
+
+            $(document).on('click', '.btn-select-officer', function() {
+                let id = $(this).data('id');
+                let name = $(this).data('name');
+                $('#sales_officer_id').val(id).trigger('change');
+                $('#sales_officer_display').val(name);
+                $('#officerModal').modal('hide');
+            });
+
+            // Quick Customer Box Toggle
+            $('#btnToggleQuickCustomer').on('click', function() {
+                $('#quickCustomerBox').slideToggle();
+                $('#qcAlert').addClass('d-none').text('');
+            });
+            $('#btnCancelQuickCustomer, #btnCloseQuickCustomer').on('click', function() {
+                $('#quickCustomerBox').slideUp();
+                $('#qcAlert').addClass('d-none').text('');
+            });
+
+            // Quick Customer AJAX Form Submit
+            $('#quickCustomerForm').on('submit', function(e) {
+                e.preventDefault();
+                let $btn = $('#btnSaveQuickCustomer');
+                let $spinner = $('#qcSpinner');
+                let $alert = $('#qcAlert');
+
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $alert.addClass('d-none').text('');
+
+                $.ajax({
+                    url: '{{ route("customers.store") }}',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+
+                        if (response && response.success && response.customer) {
+                            let c = response.customer;
+                            let searchStr = ((c.customer_id || '') + ' ' + (c.customer_name || '') + ' ' + (c.business_name || '')).toLowerCase();
+                            let newRow = `
+                                <tr class="customer-item-row" data-search="${searchStr}">
+                                    <td><span class="badge bg-light text-dark border">${c.customer_id || 'N/A'}</span></td>
+                                    <td><strong>${c.customer_name}</strong></td>
+                                    <td>${c.business_name || '-'}</td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 btn-select-customer" 
+                                            data-id="${c.id}" 
+                                            data-name="${c.customer_name}">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            $('#customerTableBody').prepend(newRow);
+
+                            // Auto select newly created customer
+                            $('#customer_id').val(c.id).trigger('change');
+                            $('#customer_name_display').val(c.customer_name);
+
+                            // Reset and hide form
+                            $('#quickCustomerForm')[0].reset();
+                            $('#quickCustomerBox').hide();
+
+                            // Hide modal
+                            $('#customerModal').modal('hide');
+
+                            if (window.toastr) {
+                                toastr.success('Customer added and selected successfully!');
+                            }
+                        } else {
+                            $alert.removeClass('d-none').text('Customer could not be added.');
+                        }
+                    },
+                    error: function(xhr) {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        let msg = 'Failed to create customer.';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        $alert.removeClass('d-none').html(msg);
+                    }
+                });
             });
 
             // Search Logic for Modals

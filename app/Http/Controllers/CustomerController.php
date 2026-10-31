@@ -121,10 +121,21 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->filled('customer_id')) {
+            $nextNum = (Customer::max('id') ?? 0) + 1;
+            $candidateId = 'CUST-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            while (Customer::where('customer_id', $candidateId)->exists()) {
+                $nextNum++;
+                $candidateId = 'CUST-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            }
+            $request->merge(['customer_id' => $candidateId]);
+        }
+
         $data = $request->validate([
             'customer_id'      => 'required|unique:customers',
-            'customer_name'    => 'nullable',
+            'customer_name'    => 'required',
             'customer_name_ur' => 'nullable',
+            'business_name'    => 'nullable',
             'cnic'             => 'nullable',
             'filer_type'       => 'nullable',
             'zone'             => 'nullable',
@@ -183,6 +194,19 @@ class CustomerController extends Controller
                 now()->toDateString(),
                 $customer
             );
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'customer' => [
+                    'id' => $customer->id,
+                    'customer_id' => $customer->customer_id,
+                    'customer_name' => $customer->customer_name,
+                    'business_name' => $customer->business_name ?? '',
+                ],
+                'message' => 'Customer created successfully.'
+            ]);
         }
 
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');

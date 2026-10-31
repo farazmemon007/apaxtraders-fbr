@@ -9,7 +9,9 @@
                     <i class="bi bi-card-checklist text-primary fs-4"></i>
                     Import Sale Order / DC
                 </h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; border: none; background: transparent; line-height: 1;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body p-4 bg-white">
                 <div class="row mb-3">
@@ -139,17 +141,69 @@
                     <i class="bi bi-people text-primary fs-4"></i>
                     Select Customer
                 </h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; border: none; background: transparent; line-height: 1;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body p-4 bg-white">
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                <div class="row mb-3 align-items-center">
+                    <div class="col-md-7">
                         <div class="search-wrapper position-relative">
                             <i class="bi bi-search text-muted position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%);"></i>
                             <input type="text" id="searchCustomer" class="form-control form-control-sm ps-5 py-2 rounded-pill" placeholder="Search by name or code...">
                         </div>
                     </div>
+                    <div class="col-md-5 text-end mt-2 mt-md-0">
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm" id="btnToggleQuickCustomer">
+                            <i class="bi bi-person-plus-fill me-1"></i> + New Customer
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Quick Add Customer Inline Form -->
+                <div id="quickCustomerBox" class="card border border-primary-subtle bg-light mb-3" style="display: none; border-radius: 12px;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center gap-1">
+                                <i class="bi bi-person-plus-fill"></i> Add New Customer
+                            </h6>
+                            <button type="button" class="btn btn-sm text-muted p-0" id="btnCloseQuickCustomer" style="font-size: 1.25rem; line-height: 1; border: none; background: none;">&times;</button>
+                        </div>
+                        <form id="quickCustomerForm">
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold mb-1">Customer Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="qc_customer_name" name="customer_name" class="form-control form-control-sm" required placeholder="Full Name">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold mb-1">Business / Shop Name</label>
+                                    <input type="text" id="qc_business_name" name="business_name" class="form-control form-control-sm" placeholder="Business Name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold mb-1">Mobile / Phone</label>
+                                    <input type="text" id="qc_mobile" name="mobile" class="form-control form-control-sm" placeholder="03XXXXXXXXX">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold mb-1">Address / City</label>
+                                    <input type="text" id="qc_address" name="address" class="form-control form-control-sm" placeholder="Address">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold mb-1">Opening Balance</label>
+                                    <input type="number" step="any" id="qc_opening_balance" name="opening_balance" class="form-control form-control-sm" value="0">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" id="btnCancelQuickCustomer">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4" id="btnSaveQuickCustomer">
+                                    <span class="spinner-border spinner-border-sm me-1 d-none" id="qcSpinner"></span>
+                                    Save & Select
+                                </button>
+                            </div>
+                            <div id="qcAlert" class="mt-2 small text-danger d-none"></div>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="erp-table-wrapper" style="max-height: 400px; overflow-y: auto;">
                     <table class="erp-table table-hover align-middle mb-0" id="customerTable">
                         <thead class="sticky-top bg-light">
@@ -192,7 +246,9 @@
                     <i class="bi bi-person-badge text-primary fs-4"></i>
                     Select Sales Officer
                 </h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; border: none; background: transparent; line-height: 1;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body p-4 bg-white">
                 <div class="row mb-3">
