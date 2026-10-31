@@ -117,13 +117,24 @@ window.FbrPostManager = {
                     </table>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold mb-1" style="font-size: 0.82rem;">FBR Scenario:</label>
-                    <select id="swal_fbr_scenario" class="form-select form-select-sm" style="font-size: 0.82rem;">
-                        ${scenarioOptions}
-                    </select>
-                    <div class="form-text text-muted" style="font-size: 0.75rem;">
-                        <i class="fas fa-info-circle me-1"></i>Auto-selected based on buyer registration and tax calculation.
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1" style="font-size: 0.82rem;">Buyer Registration Type:</label>
+                        <select id="swal_buyer_reg_type" class="form-select form-select-sm" style="font-size: 0.82rem;">
+                            <option value="Registered" ${data.buyer.registration_type === 'Registered' ? 'selected' : ''}>Registered (STRN Active)</option>
+                            <option value="Unregistered" ${data.buyer.registration_type === 'Unregistered' ? 'selected' : ''}>Unregistered (Govt / Non-STRN / Consumer)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold mb-1" style="font-size: 0.82rem;">FBR Scenario:</label>
+                        <select id="swal_fbr_scenario" class="form-select form-select-sm" style="font-size: 0.82rem;">
+                            ${scenarioOptions}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">
+                            <i class="fas fa-info-circle me-1"></i>If FBR rejects with 'Buyer profile mismatch', toggle Registration Type between Registered and Unregistered.
+                        </div>
                     </div>
                 </div>
 
@@ -148,22 +159,36 @@ window.FbrPostManager = {
             customClass: {
                 popup: 'rounded-4 shadow-lg'
             },
+            didOpen: () => {
+                const regSelect = document.getElementById('swal_buyer_reg_type');
+                const scenarioSelect = document.getElementById('swal_fbr_scenario');
+                if (regSelect && scenarioSelect) {
+                    regSelect.addEventListener('change', function() {
+                        if (this.value === 'Unregistered' && scenarioSelect.value === 'SN001') {
+                            scenarioSelect.value = 'SN002';
+                        } else if (this.value === 'Registered' && scenarioSelect.value === 'SN002') {
+                            scenarioSelect.value = 'SN001';
+                        }
+                    });
+                }
+            },
             preConfirm: () => {
                 const scenario = document.getElementById('swal_fbr_scenario').value;
+                const regType = document.getElementById('swal_buyer_reg_type')?.value || 'Unregistered';
                 if (!scenario) {
                     Swal.showValidationMessage('Please select an FBR scenario');
                     return false;
                 }
-                return { scenario_id: scenario };
+                return { scenario_id: scenario, registration_type: regType };
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                this.executePost(saleId, result.value.scenario_id, data);
+                this.executePost(saleId, result.value.scenario_id, result.value.registration_type, data);
             }
         });
     },
 
-    executePost: function(saleId, scenarioId, previousData) {
+    executePost: function(saleId, scenarioId, regType, previousData) {
         Swal.fire({
             title: 'Transmitting to FBR Gateway...',
             html: `
@@ -190,7 +215,8 @@ window.FbrPostManager = {
             method: 'POST',
             data: {
                 _token: this.csrfToken,
-                scenario_id: scenarioId
+                scenario_id: scenarioId,
+                registration_type: regType
             },
             dataType: 'json',
             success: (res) => {
@@ -229,14 +255,14 @@ window.FbrPostManager = {
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'FBR Submission Failed',
+                        title: 'FBR Error',
                         html: `
-                            <div class="alert alert-danger text-start p-2 mb-2" style="font-size:0.85rem; max-height:180px; overflow-y:auto;">
-                                <strong>Error:</strong> ${res.message || 'Unknown gateway rejection.'}
+                            <div class="alert alert-danger text-start p-3 mb-2" style="font-size:0.9rem; max-height:220px; overflow-y:auto; line-height: 1.5; white-space: pre-wrap;">
+                                ${res.message || 'FBR rejected the invoice.'}
                             </div>
-                            <p class="small text-muted mb-0">You can adjust the scenario or verify the buyer details in the FBR Settings.</p>
                         `,
-                        confirmButtonColor: '#ef4444'
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'OK'
                     });
                 }
             },
@@ -244,14 +270,14 @@ window.FbrPostManager = {
                 const msg = xhr.responseJSON?.message || 'Server error while transmitting to FBR.';
                 Swal.fire({
                     icon: 'error',
-                    title: 'FBR Transmission Error',
+                    title: 'FBR Error',
                     html: `
-                        <div class="alert alert-danger text-start p-2 mb-2" style="font-size:0.85rem; max-height:180px; overflow-y:auto;">
+                        <div class="alert alert-danger text-start p-3 mb-2" style="font-size:0.9rem; max-height:220px; overflow-y:auto; line-height: 1.5; white-space: pre-wrap;">
                             ${msg}
                         </div>
-                        <p class="small text-muted mb-0">Please verify connection or check FBR transmission logs.</p>
                     `,
-                    confirmButtonColor: '#ef4444'
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
                 });
             }
         });

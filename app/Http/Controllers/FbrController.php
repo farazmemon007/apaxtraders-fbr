@@ -67,7 +67,8 @@ class FbrController extends Controller
             }
 
             $scenarioId = $request->input('scenario_id');
-            $result = FbrService::postInvoice($sale, $scenarioId);
+            $regType = $request->input('registration_type');
+            $result = FbrService::postInvoice($sale, $scenarioId, $regType);
 
             return response()->json($result, $result['success'] ? 200 : 400);
         } catch (\Throwable $e) {
@@ -89,7 +90,8 @@ class FbrController extends Controller
 
             $sale = Sale::findOrFail($id);
             $scenarioId = $request->input('scenario_id');
-            $result = FbrService::validateInvoice($sale, $scenarioId);
+            $regType = $request->input('registration_type');
+            $result = FbrService::validateInvoice($sale, $scenarioId, $regType);
 
             return response()->json($result, $result['success'] ? 200 : 400);
         } catch (\Throwable $e) {

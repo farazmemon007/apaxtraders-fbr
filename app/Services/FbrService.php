@@ -183,7 +183,7 @@ class FbrService
     /**
      * Build the standard FBR Digital Invoicing payload from a Sale model
      */
-    public static function buildPayload(Sale $sale, ?string $overrideScenario = null): array
+    public static function buildPayload(Sale $sale, ?string $overrideScenario = null, ?string $overrideRegType = null): array
     {
         $sale->loadMissing(['customer_relation', 'items.product.brand']);
         $customer = $sale->customer_relation;
@@ -194,13 +194,16 @@ class FbrService
         $cleanNtn = self::formatBuyerNtn($rawNtn);
 
         // Buyer Registration Type
-        // If buyer has 7-digit NTN and is registered filer:
-        $isRegistered = false;
-        if (strlen($cleanNtn) === 7 && ($customer?->filer_type === 'Filer' || !empty($customer?->gst_no))) {
-            $isRegistered = true;
+        if (!empty($overrideRegType) && in_array($overrideRegType, ['Registered', 'Unregistered'])) {
+            $buyerRegType = $overrideRegType;
+            $isRegistered = ($buyerRegType === 'Registered');
+        } else {
+            $isRegistered = false;
+            if (strlen($cleanNtn) === 7 && ($customer?->filer_type === 'Filer' || !empty($customer?->gst_no))) {
+                $isRegistered = true;
+            }
+            $buyerRegType = $isRegistered ? 'Registered' : 'Unregistered';
         }
-
-        $buyerRegType = $isRegistered ? 'Registered' : 'Unregistered';
 
         // For Unregistered, if no valid NTN/CNIC, use 7-digit NTN if available or CNIC or '0000000000000'
         $buyerNtnCnic = $cleanNtn;
@@ -420,9 +423,9 @@ class FbrService
     /**
      * Validate Invoice data with FBR without final posting
      */
-    public static function validateInvoice(Sale $sale, ?string $overrideScenario = null): array
+    public static function validateInvoice(Sale $sale, ?string $overrideScenario = null, ?string $overrideRegType = null): array
     {
-        $payload = self::buildPayload($sale, $overrideScenario);
+        $payload = self::buildPayload($sale, $overrideScenario, $overrideRegType);
         $url = self::getValidateUrl();
         $token = self::getToken();
 
@@ -432,7 +435,7 @@ class FbrService
     /**
      * Submit/Post invoice directly to FBR Digital Invoicing API
      */
-    public static function postInvoice(Sale $sale, ?string $overrideScenario = null): array
+    public static function postInvoice(Sale $sale, ?string $overrideScenario = null, ?string $overrideRegType = null): array
     {
         self::ensureSchemaExists();
 
@@ -454,7 +457,7 @@ class FbrService
             ];
         }
 
-        $payload = self::buildPayload($sale, $overrideScenario);
+        $payload = self::buildPayload($sale, $overrideScenario, $overrideRegType);
         $url = self::getPostUrl();
         $token = self::getToken();
 
@@ -587,16 +590,39 @@ class FbrService
             ];
         }
 
-        // Format clean error message
-        $finalError = $errorMessage;
-        if (empty($finalError)) {
-            if (!empty($responseData['validationResponse']['invoiceStatuses'][0]['error'])) {
-                $finalError = $responseData['validationResponse']['invoiceStatuses'][0]['error'];
-            } elseif ($httpCode === 401) {
-                $finalError = 'Unauthorized: Token or Seller NTN mismatch with FBR.';
-            } else {
-                $finalError = 'FBR Rejected: ' . ($responseRaw ?: 'HTTP Error ' . $httpCode);
+        // Extract all exact error messages returned by FBR
+        $errorsList = [];
+        if (!empty($errorMessage)) {
+            $errorsList[] = trim($errorMessage);
+        }
+        if (!empty($responseData['validationResponse']['invoiceStatuses'])) {
+            foreach ($responseData['validationResponse']['invoiceStatuses'] as $statusItem) {
+                if (!empty($statusItem['error']) && !in_array(trim($statusItem['error']), $errorsList)) {
+                    $errorsList[] = trim($statusItem['error']);
+                }
             }
+        }
+        if (!empty($responseData['validationResponse']['errors']) && is_array($responseData['validationResponse']['errors'])) {
+            foreach ($responseData['validationResponse']['errors'] as $err) {
+                $errStr = is_array($err) ? json_encode($err) : trim((string)$err);
+                if (!in_array($errStr, $errorsList)) {
+                    $errorsList[] = $errStr;
+                }
+            }
+        }
+        if (!empty($responseData['error']) && !in_array(trim($responseData['error']), $errorsList)) {
+            $errorsList[] = trim($responseData['error']);
+        }
+        if (!empty($responseData['message']) && !in_array(trim($responseData['message']), $errorsList)) {
+            $errorsList[] = trim($responseData['message']);
+        }
+
+        if (!empty($errorsList)) {
+            $finalError = implode("\n", $errorsList);
+        } elseif ($httpCode === 401) {
+            $finalError = 'Unauthorized (401): FBR Token or Seller NTN mismatch with FBR.';
+        } else {
+            $finalError = !empty($responseRaw) ? $responseRaw : ('FBR Rejected: HTTP Error ' . $httpCode);
         }
 
         return [
