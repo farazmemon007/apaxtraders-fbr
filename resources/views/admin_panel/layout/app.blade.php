@@ -12,6 +12,22 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         /* ERP Mega Menu & Normal Submenu Compact Styling */
+        /* Sophisticated Executive Top Bar & Theme Overrides */
+        .rt_nav_header.horizontal-layout .top_nav {
+            background: #0f172a !important;
+            height: 50px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .rt_nav_header.horizontal-layout .top_nav .rt_nav_wrapper .nav_logo {
+            color: #ffffff !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.3px !important;
+        }
+        .rt_nav_header.horizontal-layout .top_nav .nav_wrapper_main {
+            height: 50px !important;
+        }
+
         .nav-item .submenu,
         .mega-menu .submenu {
             background: #fff;
@@ -317,288 +333,41 @@
                            End Logo
                *===========================-->
                     <div class="nav_wrapper_main d-flex align-items-center justify-content-between flex-grow-1">
-                        <ul class="navbar-nav navbar-nav-right mr-0 ml-auto">
-                            <!-- Employee Portal Quick Access -->
-                            <li class="nav-item mr-2">
-                                <a href="{{ route('employee.portal.index') }}" class="nav-link"
-                                    style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 8px; padding: 8px 16px;">
-                                    <i class="fa fa-user-circle"></i> Employee Portal
-                                </a>
-                            </li>
-
-                            <!-- My Attendance Quick Access -->
-                            <li class="nav-item mr-3">
-                                <a href="{{ route('my-attendance') }}" class="nav-link"
-                                    style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 8px; padding: 8px 16px;">
-                                    <i class="fa fa-fingerprint"></i> My Attendance
-                                </a>
-                            </li>
-
-                            {{-- ===== BRANCH INDICATOR / SWITCHER ===== --}}
+                        <ul class="navbar-nav navbar-nav-right mr-0 ml-auto d-flex align-items-center">
                             @auth
-                                @php $allBranches = \App\Models\Branch::where('is_active', true)->orderBy('name')->get(); @endphp
-                                <li class="nav-item d-flex align-items-center mr-3">
-                                    @if (auth()->user()->isSuperAdmin())
-                                        <div class="dropdown">
-                                            <button class="badge dropdown-toggle border-0 px-3 py-2"
-                                                style="background:linear-gradient(135deg,#6f42c1,#d63384);color:#fff;font-size:0.75rem;border-radius:20px;cursor:pointer; font-weight: 500;"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="fas fa-crown mr-1"></i>
-                                                @if (isset($activeBranch) && $activeBranch)
-                                                    {{ $activeBranch->name }}
-                                                @else
-                                                    All Branches
-                                                @endif
-                                                <i class="fas fa-chevron-down ml-1" style="font-size:0.65rem;"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-right shadow-lg border-0"
-                                                style="min-width:220px; z-index:9999; border-radius: 12px; margin-top: 10px;">
-                                                <h6 class="dropdown-header text-muted font-weight-bold py-3"><i
-                                                        class="fas fa-exchange-alt mr-2"></i> SWITCH BRANCH</h6>
-
-                                                <form method="POST" action="{{ route('branch.switch') }}"
-                                                    id="branchSwitchForm">
-                                                    @csrf
-                                                    <input type="hidden" name="branch_id" id="branchSwitchInput"
-                                                        value="">
-                                                </form>
-
-                                                <a class="dropdown-item py-2 {{ !isset($activeBranch) || !$activeBranch ? 'active' : '' }}"
-                                                    href="#" onclick="event.preventDefault();switchBranch('')">
-                                                    <div class="d-flex align-items-center w-100">
-                                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3"
-                                                            style="width:30px;height:30px;">
-                                                            <i class="fas fa-globe text-primary"
-                                                                style="font-size:14px;"></i>
-                                                        </div>
-                                                        <span class="font-weight-500">All Branches</span>
-                                                        @if (!isset($activeBranch) || !$activeBranch)
-                                                            <i class="fas fa-check ml-auto text-success"></i>
-                                                        @endif
-                                                    </div>
-                                                </a>
-
-                                                <div class="dropdown-divider my-2"></div>
-
-                                                @foreach ($allBranches as $br)
-                                                    <a class="dropdown-item py-2 {{ isset($activeBranch) && $activeBranch && $activeBranch->id == $br->id ? 'active' : '' }}"
-                                                        href="#"
-                                                        onclick="event.preventDefault();switchBranch({{ $br->id }})">
-                                                        <div class="d-flex align-items-center w-100">
-                                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mr-3"
-                                                                style="width:30px;height:30px;">
-                                                                <i class="fas fa-code-branch text-info"
-                                                                    style="font-size:14px;"></i>
-                                                            </div>
-                                                            <span class="font-weight-500">{{ $br->name }}</span>
-                                                            @if (isset($activeBranch) && $activeBranch && $activeBranch->id == $br->id)
-                                                                <i class="fas fa-check ml-auto text-success"></i>
-                                                            @endif
-                                                        </div>
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @elseif(isset($activeBranch) && $activeBranch)
-                                        <span class="badge px-3 py-2 shadow-sm"
-                                            style="background: linear-gradient(135deg, #0d6efd, #06c0d4); color:#fff; font-size:0.75rem; border-radius:20px; letter-spacing:0.5px; font-weight: 500;">
-                                            <i class="fas fa-code-branch mr-1"></i> {{ $activeBranch->name }}
-                                        </span>
-                                    @endif
-                                </li>
+                                {{-- Hidden branch switch form & script to preserve compatibility --}}
+                                <form method="POST" action="{{ route('branch.switch') }}" id="branchSwitchForm" style="display:none;">
+                                    @csrf
+                                    <input type="hidden" name="branch_id" id="branchSwitchInput" value="">
+                                </form>
                                 <script>
                                     function switchBranch(branchId) {
-                                        document.getElementById('branchSwitchInput').value = branchId;
-                                        document.getElementById('branchSwitchForm').submit();
+                                        var input = document.getElementById('branchSwitchInput');
+                                        var form = document.getElementById('branchSwitchForm');
+                                        if (input && form) {
+                                            input.value = branchId;
+                                            form.submit();
+                                        }
                                     }
                                 </script>
-                            @endauth
-                            {{-- ===== END BRANCH INDICATOR ===== --}}
 
-                            <!-- Cheque Notifications -->
-                            @can('receipts.voucher.view')
-                                @php
-                                    $activeBranchIdForCheques = session('branch_id') ?? auth()->user()->branch_id;
-                                    $dueChequesCount = \App\Models\Cheque::where('status', 'pending')
-                                        ->whereDate('cheque_date', '<=', now()->toDateString())
-                                        ->whereHas('voucherMaster', function ($query) use ($activeBranchIdForCheques) {
-                                            $query->when($activeBranchIdForCheques, function ($q) use (
-                                                $activeBranchIdForCheques,
-                                            ) {
-                                                $q->where('branch_id', $activeBranchIdForCheques);
-                                            });
-                                        })
-                                        ->count();
-                                @endphp
-                                @if ($dueChequesCount > 0)
-                                    <li class="nav-item mr-2 d-flex align-items-center">
-                                        <a href="{{ route('cheques.index', ['status' => 'pending']) }}" class="nav-link"
-                                            style="background: #fee2e2; color: #dc2626; border-radius: 8px; padding: 6px 12px; font-weight: 600; font-size: 0.85rem; border: 1px solid #fca5a5; box-shadow: 0 2px 4px rgba(220,38,38,0.1);">
-                                            <i class="fas fa-exclamation-circle mr-1"></i> {{ $dueChequesCount }} Due
-                                            Cheque(s)
-                                        </a>
-                                    </li>
-                                @endif
-                            @endcan
-
-                            <!-- Notification Bell -->
-                            <li class="nav-item dropdown mr-2" id="notificationLi">
-                                <a class="nav-link count-indicator dropdown-toggle position-relative"
-                                    id="notificationDropdown" href="#" data-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="fas fa-bell text-secondary"
-                                        style="font-size: 20px; transition: color 0.3s;"></i>
-                                    <span class="badge badge-danger notification-badge"
-                                        style="display: none; position: absolute; top: -2px; right: -2px; font-size: 9px; padding: 3px 5px; border-radius: 50%; box-shadow: 0 2px 5px rgba(220,53,69,0.5);">0</span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list shadow-lg border-0"
-                                    aria-labelledby="notificationDropdown"
-                                    style="width: 320px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
-                                    <div class="dropdown-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center"
-                                        style="border-radius: 12px 12px 0 0;">
-                                        <p class="mb-0 font-weight-bold text-dark">NOTIFICATIONS</p>
-                                    </div>
-                                    <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
-                                        <!-- Items will be injected here -->
-                                        <div class="text-center p-4">
-                                            <div class="spinner-border text-primary spinner-border-sm" role="status">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Sticky Footer Button -->
-                                    <div class="dropdown-footer text-center bg-light border-top p-2"
-                                        style="position: sticky; bottom: 0; z-index: 10;">
-                                        <a href="{{ route('notifications.index') }}"
-                                            class="btn btn-primary btn-sm btn-block shadow-sm font-weight-bold">View
-                                            All Notifications</a>
-                                    </div>
-                                </div>
-                            </li>
-
-                            <style>
-                                /* Standard Click Dropdown Styling */
-
-                                /* Scrollbar */
-                                #notificationList::-webkit-scrollbar {
-                                    width: 5px;
-                                }
-
-                                #notificationList::-webkit-scrollbar-thumb {
-                                    background: #e0e0e0;
-                                    border-radius: 10px;
-                                }
-
-                                #notificationList::-webkit-scrollbar-track {
-                                    background: transparent;
-                                }
-
-                                /* Items */
-                                .notification-item {
-                                    transition: all 0.2s ease;
-                                    border-left: 3px solid transparent;
-                                }
-
-                                .notification-item:hover {
-                                    background-color: #f8f9fa;
-                                    border-left: 3px solid #3b82f6;
-                                    /* Blue accent */
-                                }
-
-                                /* Navigation Bell Hover */
-                                #notificationLi .nav-link:hover .fa-bell {
-                                    color: #3b82f6 !important;
-                                    /* Blue on hover */
-                                }
-                            </style>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    // Poll every 30s
-                                    fetchNotifications();
-                                    setInterval(fetchNotifications, 30000);
-                                });
-
-                                function fetchNotifications() {
-                                    if (typeof $ === 'undefined') return;
-
-                                    $.get("{{ route('notifications.fetch') }}", function(data) {
-                                        // Update Badge
-                                        if (data.count > 0) {
-                                            $('.notification-badge').text(data.count).show();
-                                            $('.notification-badge').addClass('animate__animated animate__pulse');
-                                        } else {
-                                            $('.notification-badge').hide();
-                                        }
-
-                                        // Update List
-                                        let html = '';
-                                        if (data.notifications.length === 0) {
-                                            html = `
-                                                <div class="text-center p-5">
-                                                    <i class="fas fa-bell-slash text-muted mb-2" style="font-size: 24px;"></i>
-                                                    <p class="text-muted small mb-0">No new notifications</p>
-                                                </div>`;
-                                        } else {
-                                            data.notifications.forEach(n => {
-                                                // Modern colors: Soft background with strong icon color
-                                                let iconBg = '#e3f2fd'; // Light Blue
-                                                let iconColor = '#2196f3'; // Blue
-                                                let iconClass = 'fa-info';
-
-                                                if (n.type === 'sale_return') {
-                                                    iconBg = '#fff3e0'; // Light Orange
-                                                    iconColor = '#ff9800'; // Orange
-                                                    iconClass = 'fa-undo';
-                                                }
-
-                                                html += `
-                                                <a class="dropdown-item p-3 notification-item" href="${n.action_url || '#'}" style="white-space: normal;">
-                                                    <div class="d-flex align-items-start">
-                                                        <div class="me-3 mt-1" style="min-width: 36px;">
-                                                            <div class="rounded-circle d-flex align-items-center justify-content-center" 
-                                                                 style="width:36px; height:36px; background-color: ${iconBg}; color: ${iconColor};">
-                                                                <i class="fas ${iconClass}" style="font-size:14px;"></i>
-                                                            </div>
-                                                        </div>
-                                                        <div class="flex-grow-1 ms-3">
-                                                            <h6 class="font-weight-bold text-dark mb-1" style="font-size:14px; line-height:1.2;">${n.title}</h6>
-                                                            <p class="text-muted small mb-1" style="font-size:12px; line-height:1.4; color: #6c757d;">
-                                                                ${n.message.substring(0, 60)}${n.message.length > 60 ? '...' : ''}
-                                                            </p>
-                                                            <p class="text-secondary small mb-0" style="font-size:10px; font-weight: 500;">
-                                                                <i class="far fa-clock me-1"></i> ${new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </a>`;
-                                            });
-                                        }
-                                        $('#notificationList').html(html);
-                                    });
-                                }
-                            </script>
-
-                            <li class="nav-item nav-profile dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"
-                                    id="profileDropdown">
-                                    <span class="profile_name">{{ Auth::user()->name }} <i
-                                            class="fas fa-chevron-down"></i></span>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right navbar-dropdown pt-2"
-                                    aria-labelledby="profileDropdown">
-                                    <span role="separator" class="divider"></span>
-                                    <form method="POST" action="{{ route('logout') }}">
+                                <li class="nav-item d-flex align-items-center">
+                                    <span class="mr-3 d-inline-flex align-items-center" style="font-size: 13px; gap: 7px;">
+                                        <i class="fas fa-user-circle" style="font-size: 16px; color: #d4af37;"></i>
+                                        <span style="color: #f1ede4; font-weight: 600; letter-spacing: 0.2px;">{{ Auth::user()->name }}</span>
+                                    </span>
+                                    <form method="POST" action="{{ route('logout') }}" class="d-inline mb-0">
                                         @csrf
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-power-off text-dark mr-3"></i> Logout
+                                        <button type="submit" class="btn btn-sm d-inline-flex align-items-center shadow-sm"
+                                            style="background: rgba(220, 38, 38, 0.18); border: 1px solid rgba(220, 38, 38, 0.4); color: #fca5a5; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 11.5px; gap: 6px; transition: all 0.2s;"
+                                            onmouseover="this.style.background='#dc2626'; this.style.color='#fff';"
+                                            onmouseout="this.style.background='rgba(220, 38, 38, 0.18)'; this.style.color='#fca5a5';"
+                                            title="Logout">
+                                            <i class="fas fa-power-off"></i> Logout
                                         </button>
                                     </form>
-                                    {{-- </a> --}}
-                                </div>
-                            </li>
-                            <!--==================================*
-                                 End Profile Menu
-                        *====================================-->
+                                </li>
+                            @endauth
                         </ul>
                         <!--=========================*
                                Mobile Menu

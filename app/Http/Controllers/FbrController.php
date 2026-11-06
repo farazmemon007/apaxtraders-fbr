@@ -34,6 +34,8 @@ class FbrController extends Controller
             'is_fbr_posted'    => $isFbrPosted,
             'detected_scenario'=> $payload['scenarioId'],
             'seller'           => FbrService::getSellerDetails(),
+            'business_nature'  => SystemSetting::get('fbr_business_nature', 'Distributor'),
+            'sector'           => SystemSetting::get('fbr_sector', 'Wholesale / Retails'),
             'buyer'            => [
                 'name'              => $payload['buyerBusinessName'],
                 'ntn_cnic'          => $payload['buyerNTNCNIC'],
@@ -116,12 +118,15 @@ class FbrController extends Controller
         $prodUrl       = SystemSetting::get('fbr_production_url', 'https://gw.fbr.gov.pk/di_data/v1/di/postinvoicedata');
         $prodValUrl    = SystemSetting::get('fbr_production_validate_url', 'https://gw.fbr.gov.pk/di_data/v1/di/validateinvoicedata');
         $prodToken     = SystemSetting::get('fbr_production_token', '');
-        $sellerNtn     = SystemSetting::get('fbr_seller_ntn', '3520224331243');
+        $sellerNtn     = SystemSetting::get('fbr_seller_ntn', 'E427507');
         $sellerName    = SystemSetting::get('fbr_seller_name', 'THREE STARS MEDICAL SUPPLIES');
         $sellerProvince= SystemSetting::get('fbr_seller_province', 'Punjab');
         $sellerAddress = SystemSetting::get('fbr_seller_address', 'M17-M18 SAITH CENTRE SYED MOJ DARYA ROAD LAHORE');
+        $businessNature= SystemSetting::get('fbr_business_nature', 'Distributor');
+        $sector        = SystemSetting::get('fbr_sector', 'Wholesale / Retails');
         $defaultHs     = SystemSetting::get('fbr_default_hs_code', '9018.9090');
         $scenarios     = FbrService::getScenarios();
+        $allScenariosMaster = FbrService::getAllScenariosMaster();
         $sandboxScenarios = FbrService::getAllSandboxScenarios();
         $defaultScenario = SystemSetting::get('fbr_default_scenario', 'SN001');
 
@@ -135,7 +140,8 @@ class FbrController extends Controller
         return view('admin_panel.settings.fbr_settings', compact(
             'environment', 'enabled', 'sandboxUrl', 'sandboxValUrl', 'sandboxToken',
             'prodUrl', 'prodValUrl', 'prodToken', 'sellerNtn', 'sellerName',
-            'sellerProvince', 'sellerAddress', 'defaultHs', 'scenarios', 'sandboxScenarios', 'defaultScenario', 'logs'
+            'sellerProvince', 'sellerAddress', 'businessNature', 'sector', 'defaultHs', 
+            'scenarios', 'allScenariosMaster', 'sandboxScenarios', 'defaultScenario', 'logs'
         ));
 
     }
@@ -166,6 +172,8 @@ class FbrController extends Controller
             'fbr_seller_name'              => $request->fbr_seller_name,
             'fbr_seller_province'          => $request->fbr_seller_province,
             'fbr_seller_address'           => $request->fbr_seller_address,
+            'fbr_business_nature'          => $request->fbr_business_nature ?? 'Distributor',
+            'fbr_sector'                   => $request->fbr_sector ?? 'Wholesale / Retails',
             'fbr_default_scenario'         => $request->fbr_default_scenario ?? 'SN001',
             'fbr_default_hs_code'          => $request->fbr_default_hs_code ?? '9018.9090',
         ];

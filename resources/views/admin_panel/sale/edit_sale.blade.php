@@ -2,444 +2,577 @@
 
 @section('content')
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-        body {
-            background-color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-            color: #334155;
+        /* ========================================================
+           MODERN SAAS / ERP PALETTE: CRISP SLATE & VIBRANT EMERALD
+           ======================================================== */
+        :root {
+            --theme-bg: #f8fafc;              /* Crisp clean porcelain canvas */
+            --theme-card-bg: #ffffff;         /* Pure crisp white */
+            --theme-surface-subtle: #f1f5f9;  /* Cool soft slate */
+            --theme-border: #e2e8f0;          /* Clean modern slate border */
+            --theme-border-strong: #cbd5e1;   /* Defined slate border */
+            --theme-text-dark: #0f172a;       /* Deep executive slate */
+            --theme-text-muted: #64748b;      /* Clean muted slate */
+            --theme-accent-emerald: #059669;  /* Vibrant executive emerald */
+            --theme-accent-emerald-hover: #047857;
+            --theme-accent-navy: #0f172a;     /* Obsidian executive slate */
+            --theme-accent-amber: #d97706;    /* Warm amber */
+            --theme-danger: #dc2626;          /* Crisp red */
         }
 
-        /* Page Header */
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #0f172a;
-            letter-spacing: -0.025em;
+        body, .main-content {
+            background-color: var(--theme-bg) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            color: var(--theme-text-dark) !important;
+            font-size: 12px;
         }
 
-        .page-subtitle {
-            color: #64748b;
-            font-size: 0.875rem;
+        /* Zero-Scroll Page Overrides */
+        .main-content-inner,
+        .content-wrapper {
+            padding: 3px 0 0 0 !important;
         }
 
-        /* ERP Cards */
-        .erp-card {
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            margin-bottom: 1.25rem;
-            transition: box-shadow 0.2s ease-in-out;
+        .container-fluid {
+            padding: 2px 12px 6px 12px !important;
+            max-width: 100% !important;
         }
 
-        .erp-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        footer {
+            display: none !important;
         }
 
-        .erp-card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
+        /* Top Bar */
+        .qb-topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #ffffff;
-            border-radius: 12px 12px 0 0;
+            padding: 2px 4px;
+            margin-bottom: 3px;
         }
 
-        .erp-card-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #1e293b;
+        .qb-page-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--theme-text-dark);
+            letter-spacing: -0.3px;
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 6px;
         }
 
-        .erp-card-body {
-            padding: 1.5rem;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            font-size: 0.75rem;
+        .qb-btn-import {
+            background: #ffffff;
+            color: var(--theme-accent-emerald);
+            border: 1px solid var(--theme-border-strong);
+            font-size: 11.5px;
             font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.375rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            padding: 3px 12px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+            height: 28px;
         }
-
-        .form-control,
-        .form-select {
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            padding: 0.5rem 0.875rem;
-            font-size: 0.875rem;
-            background-color: #f8fafc;
-            color: #1e293b;
-            transition: all 0.2s ease;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+        .qb-btn-import:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: var(--theme-accent-emerald);
         }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #3b82f6;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-            outline: none;
-        }
-
-        .form-control:read-only {
-            background-color: #f1f5f9;
-            border-color: #e2e8f0;
-            color: #64748b;
+        .qb-btn-import:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
-        /* Table Styles */
-        .erp-table-wrapper {
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            background: white;
-        }
-
-        .erp-table {
-            margin-bottom: 0;
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .erp-table thead {
-            background-color: #f8fafc;
-        }
-
-        .erp-table thead th {
-            padding: 0.875rem 0.5rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 2px solid #e2e8f0;
-            white-space: nowrap;
-            vertical-align: middle;
-        }
-
-        .erp-table tbody td {
-            padding: 0.5rem 0.4rem;
-            font-size: 0.85rem;
-            color: #334155;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
+        .qb-btn-back {
             background: #ffffff;
-        }
-
-        .erp-table tbody tr:hover td {
-            background-color: #f8fafc;
-        }
-
-        .erp-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .erp-table input.form-control {
-            padding: 0.375rem 0.3rem;
-            background-color: #ffffff;
-            border: 1px solid transparent;
-            border-bottom: 1px solid #e2e8f0;
-            border-radius: 4px;
-            box-shadow: none;
-        }
-
-        .erp-table input.form-control:focus {
-            border-color: #3b82f6;
-            background-color: #ffffff;
-            outline: none;
-            z-index: 3;
-        }
-
-        /* Input Group Polish */
-        .erp-table .input-group {
-            flex-wrap: nowrap;
-        }
-
-        .erp-table .input-group .form-control {
-            border: 1px solid #e2e8f0;
-            border-right: none;
-            border-radius: 6px 0 0 6px !important;
-            flex: 1 1 auto !important;
-            min-width: 60px !important;
-            width: 100% !important;
-        }
-
-        .erp-table .input-group .btn,
-        .erp-table .input-group .input-group-text {
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 0 6px 6px 0 !important;
-            background-color: #f8fafc;
             color: #475569;
-            padding: 0 0.4rem;
-            transition: all 0.2s;
-            min-width: 32px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        .erp-table input.form-control:read-only {
-            background-color: transparent;
-            border-color: transparent;
-            font-weight: 500;
-            cursor: default;
-            text-align: right;
-        }
-
-        .input-highlight {
-            font-weight: 700 !important;
-            color: #059669 !important;
-            font-size: 0.95rem;
-        }
-
-        /* Summary Totals */
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-        }
-
-        .summary-label {
-            color: #64748b;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .summary-value {
+            border: 1px solid var(--theme-border-strong);
+            font-size: 11.5px;
             font-weight: 600;
-            color: #1e293b;
-            font-size: 0.9rem;
+            padding: 3px 12px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            height: 28px;
+            transition: all 0.15s;
         }
-
-        .summary-total-row {
-            background: linear-gradient(to right, #f8fafc, #f1f5f9);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            margin-top: 1rem;
-        }
-
-        .summary-total-label {
-            font-size: 1.1rem;
-            font-weight: 700;
+        .qb-btn-back:hover {
+            background: #f8fafc;
             color: #0f172a;
         }
 
-        .summary-total-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #2563eb;
+        /* Cards */
+        .qb-card {
+            background: var(--theme-card-bg);
+            border: 1px solid var(--theme-border);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            margin-bottom: 3px;
         }
 
-        /* Buttons */
-        .btn-erp {
-            padding: 0.625rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            display: inline-flex;
+        .qb-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--theme-text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin: 0;
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
+            gap: 4px;
         }
 
-        .btn-erp-primary {
-            background: linear-gradient(to bottom, #3b82f6, #2563eb);
-            color: white;
-            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-erp-primary:hover {
-            background: linear-gradient(to bottom, #2563eb, #1d4ed8);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-erp-success {
-            background: linear-gradient(to bottom, #10b981, #059669);
-            color: white;
-            box-shadow: 0 1px 2px rgba(5, 150, 105, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-erp-secondary {
-            background-color: #ffffff;
+        /* Labels & Inputs */
+        .qb-lbl {
+            font-size: 9.5px;
+            font-weight: 700;
             color: #475569;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 1px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Modern ERP Sale Action Buttons */
-        .btn-sale-action {
-            width: 100%;
+        .qb-input {
+            height: 26px !important;
+            padding: 2px 8px !important;
+            font-size: 11.5px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 4px !important;
+            background-color: #ffffff !important;
+            color: var(--theme-text-dark) !important;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .qb-input:focus {
+            border-color: var(--theme-accent-emerald) !important;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+            outline: none !important;
+        }
+        .qb-input:read-only {
+            background-color: #f8fafc !important;
+            color: #334155 !important;
+            border-color: #e2e8f0 !important;
+            font-weight: 600;
+        }
+
+        .btn-select-modal {
+            height: 26px !important;
+            padding: 0 9px !important;
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            border-right: none !important;
+            border-top-left-radius: 4px !important;
+            border-bottom-left-radius: 4px !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.85rem 1.25rem;
-            border-radius: 8px;
-            font-size: 0.92rem;
-            font-weight: 700;
-            letter-spacing: 0.4px;
-            border: none;
-            transition: all 0.2s ease-in-out;
+        }
+        .qb-input-name {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
             cursor: pointer;
-            text-transform: uppercase;
-            box-sizing: border-box;
-            line-height: 1.2;
         }
 
-        .btn-sale-confirm {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff !important;
-            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+        .qb-select {
+            height: 26px !important;
+            padding: 1px 6px !important;
+            font-size: 11.5px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 4px !important;
+            background-color: #ffffff !important;
+            color: var(--theme-text-dark) !important;
         }
-        .btn-sale-confirm:hover:not(:disabled) {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(5, 150, 105, 0.35);
-            color: #ffffff !important;
-        }
-        .btn-sale-confirm:disabled {
-            background: #e2e8f0 !important;
-            color: #94a3b8 !important;
-            cursor: not-allowed !important;
-            box-shadow: none !important;
-            transform: none !important;
+        .qb-select:focus {
+            border-color: var(--theme-accent-emerald) !important;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+            outline: none !important;
         }
 
-        .btn-sale-fbr {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            color: #ffffff !important;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+        /* Pill Toggles */
+        .qb-check-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--theme-text-dark);
+            background: #f8fafc;
+            border: 1px solid var(--theme-border-strong);
+            border-radius: 4px;
+            padding: 2px 7px;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 0;
+            white-space: nowrap;
         }
-        .btn-sale-fbr:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(2, 132, 199, 0.35);
-            color: #ffffff !important;
+        .qb-check-pill input {
+            accent-color: var(--theme-accent-emerald);
+            cursor: pointer;
+            margin: 0;
         }
-        .btn-sale-fbr:disabled {
-            background: #f8fafc !important;
-            color: #64748b !important;
-            border: 1.5px dashed #cbd5e1 !important;
-            box-shadow: none !important;
-            cursor: not-allowed !important;
-            transform: none !important;
-            opacity: 1 !important;
-        }
-        .btn-sale-fbr.is-posted {
-            background: #ecfdf5 !important;
-            color: #047857 !important;
-            border: 1.5px solid #10b981 !important;
-            box-shadow: none !important;
-            cursor: default !important;
+        .qb-status-pill {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            white-space: nowrap;
         }
 
-        .btn-sale-draft {
+        /* Table Grid */
+        .qb-table-scroll {
+            max-height: clamp(140px, calc(100vh - 440px), 240px);
+            min-height: 140px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid var(--theme-border);
+            border-radius: 4px;
             background: #ffffff;
-            color: #475569 !important;
-            border: 1.5px solid #cbd5e1;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
-        .btn-sale-draft:hover:not(:disabled) {
+        .qb-table {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: collapse;
+        }
+        .qb-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #f1f5f9 !important;
+            color: #1e293b !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.3px !important;
+            border-bottom: 2px solid #cbd5e1 !important;
+            padding: 5px 5px !important;
+            white-space: nowrap !important;
+            vertical-align: middle !important;
+        }
+        .qb-table tbody td {
+            padding: 2px 3px;
+            font-size: 11.5px;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            background: #ffffff;
+            height: 27px;
+        }
+        .qb-table tbody tr:hover td {
+            background-color: #f8fafc;
+        }
+        .qb-table input.form-control,
+        .qb-table select.form-select {
+            height: 24px !important;
+            padding: 1px 5px !important;
+            font-size: 11px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 3px !important;
+            background-color: #ffffff;
+            box-shadow: none;
+        }
+        .qb-table input.form-control:focus,
+        .qb-table select.form-select:focus {
+            border-color: var(--theme-accent-emerald) !important;
+            box-shadow: 0 0 0 1px var(--theme-accent-emerald) !important;
+            outline: none;
+        }
+        .qb-table .quantity,
+        .qb-table .loose_pieces {
+            background-color: #ffffff !important;
+            border-color: #94a3b8 !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+        }
+        .qb-table .product-select-btn {
+            height: 24px;
+            line-height: 22px;
+            padding: 0 7px;
+            font-size: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            background: #fff;
+            color: #475569;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .qb-table .product-select-btn:hover {
+            border-color: var(--theme-accent-emerald);
+        }
+        .qb-table .product-select-btn.has-value {
+            font-weight: 600;
+            color: #0f172a;
             background: #f8fafc;
             border-color: #94a3b8;
-            color: #1e293b !important;
-            transform: translateY(-1px);
         }
 
-        .btn-erp-secondary:hover {
-            background-color: #f8fafc;
-            border-color: #94a3b8;
-            color: #1e293b;
+        .qb-table .input-group-sm {
+            height: 24px;
+            display: flex;
+            align-items: stretch;
+        }
+        .qb-table .input-group-sm .form-control {
+            height: 24px !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        .qb-table .input-group-sm .btn,
+        .qb-table .input-group-sm .input-group-text {
+            height: 24px !important;
+            padding: 0 5px !important;
+            font-size: 9.5px !important;
+            line-height: 22px !important;
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+            border-left: none !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+
+        .qb-btn-add-line {
+            background: var(--theme-accent-emerald);
+            color: #ffffff;
+            border: none;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            height: 24px;
+            transition: background .15s;
+        }
+        .qb-btn-add-line:hover {
+            background: var(--theme-accent-emerald-hover);
+            color: #fff;
+        }
+
+        /* Financial Ledger Rows */
+        .qb-ledger-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 23px;
+            border-bottom: 1px dashed #e2e8f0;
+            padding: 0 3px;
+            font-size: 11px;
+        }
+        .qb-ledger-lbl {
+            font-size: 11px;
+            color: #475569;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .qb-ledger-val {
+            background: transparent;
+            border: none;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: right;
+            width: 80px;
+            outline: none;
+            padding: 0;
+        }
+        .qb-ledger-input {
+            height: 20px !important;
+            font-size: 11px !important;
+            padding: 0 4px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 3px !important;
+            background: #ffffff !important;
+        }
+
+        /* Obsidian Slate Net Payable Box */
+        .qb-net-box {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            color: #ffffff !important;
+            border-radius: 5px !important;
+            padding: 6px 12px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            margin-top: 5px !important;
+            margin-bottom: 3px !important;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15) !important;
+            border: 1px solid #334155 !important;
+        }
+        .qb-net-title {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.6px !important;
+            color: #94a3b8 !important;
+        }
+        .qb-currency {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            color: #10b981 !important;
+        }
+        .qb-net-amount {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-size: 1.35rem !important;
+            font-weight: 800 !important;
+            text-align: right !important;
+            width: 140px !important;
+            outline: none !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
+        }
+
+        /* Action Buttons */
+        .qb-btn-post {
+            background: var(--theme-accent-emerald) !important;
+            color: #ffffff !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            height: 32px !important;
+            border: 1px solid var(--theme-accent-emerald-hover) !important;
+            border-radius: 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            letter-spacing: 0.3px !important;
+            cursor: pointer;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25) !important;
+        }
+        .qb-btn-post:hover {
+            background: var(--theme-accent-emerald-hover) !important;
+            color: #fff !important;
+        }
+        .qb-btn-draft {
+            background: #ffffff !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            height: 32px !important;
+            border-radius: 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            cursor: pointer;
+            transition: all 0.15s ease !important;
+        }
+        .qb-btn-draft:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+        }
+        .qb-btn-fbr {
+            background: #0284c7 !important;
+            color: #ffffff !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            height: 32px !important;
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 0 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+            cursor: pointer;
+        }
+        .qb-btn-fbr:disabled {
+            background: #f1f5f9 !important;
+            color: #94a3b8 !important;
+            border: 1px dashed #cbd5e1 !important;
+            cursor: not-allowed !important;
         }
 
         .btn-erp-danger-ghost {
             background: transparent;
             color: #ef4444;
-            padding: 0.375rem;
-            border-radius: 6px;
+            padding: 1px 4px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-erp-danger-ghost:hover {
+            color: #dc2626;
         }
 
-        /* Badges */
-        .erp-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background-color: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+        /* Select2 Compact Override */
+        .select2-container--default .select2-selection--single {
+            height: 25px !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 4px !important;
+            font-size: 11px !important;
+            line-height: 23px !important;
+            display: flex !important;
+            align-items: center !important;
+            background-color: transparent !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 23px !important;
+            padding-left: 6px !important;
+            font-size: 11px !important;
+            color: #0f172a !important;
+            font-weight: 600 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 23px !important;
         }
 
-        .compact-lbl {
-            font-size: 12px;
-            font-weight: 700;
-            color: #475569;
-            white-space: nowrap;
-            vertical-align: middle;
+        /* Responsive Zero-Scroll Adaptations */
+        @media (max-height: 800px) {
+            .qb-table-scroll {
+                max-height: calc(100vh - 410px);
+                min-height: 120px;
+            }
+            .qb-card {
+                margin-bottom: 2px;
+            }
         }
 
-        .compact-input {
-            padding: 0.25rem 0.5rem;
-            font-size: 13px;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            width: 100%;
-            transition: all 0.2s;
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
         }
-
-        .compact-select {
-            padding: 0.25rem 0.5rem;
-            font-size: 13px;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            width: 100%;
-            background-color: #fff;
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
         }
-
-        .compact-td {
-            padding: 0.3rem 0.5rem !important;
-            vertical-align: middle;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 
     <div class="main-content">
         <div class="main-content-inner">
-            <div class="container-fluid py-4">
+            <div class="container-fluid">
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
                 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -449,451 +582,411 @@
                     <input type="hidden" name="draft_id" id="draft_id_input" value="{{ $sale->id }}">
                     <input type="hidden" name="mode" value="{{ $sale->sale_status == 'booked' ? 'so' : 'srn' }}">
 
-                    <!-- Page Header Top -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h1 class="page-title"><i class="bi bi-pencil-square me-2 text-primary"></i>
+                    <!-- Top Action / Title Bar -->
+                    <div class="qb-topbar">
+                        <div class="d-flex align-items-center gap-2">
+                            <h1 class="qb-page-title">
+                                <i class="bi bi-pencil-square text-success"></i>
                                 Edit {{ $sale->sale_status == 'booked' ? 'Sale Order' : 'Sale Invoice Note' }}
                             </h1>
-                            <p class="page-subtitle mb-0">Modify existing outward stock record #{{ $sale->invoice_no }}</p>
+                            <span class="badge" style="background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; font-size:10.5px; font-weight:600; padding:3px 8px; border-radius:4px;">
+                                <i class="bi bi-pencil me-1"></i>Editing #{{ $sale->invoice_no }}
+                            </span>
+                            <span class="badge" style="background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; font-size:10px; padding:3px 7px; border-radius:4px;">
+                                <i class="bi bi-geo-alt me-1"></i>{{ strtoupper($sale->branch->name ?? 'Head Office') }}
+                            </span>
                         </div>
-                        <div class="d-flex gap-3">
-                            <a href="{{ route('sale.receipt.index') }}" class="btn-erp btn-erp-secondary">
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('sale.receipt.index') }}" class="qb-btn-back">
                                 <i class="bi bi-arrow-left"></i> Back to Registry
                             </a>
                         </div>
                     </div>
 
-                    <div class="erp-card mb-3">
-                        <div class="erp-card-header">
-                            <h3 class="erp-card-title"><i class="bi bi-info-square text-primary"></i> Order Details</h3>
-                            <span class="erp-badge"><i class="bi bi-pencil me-1 text-primary"></i>Editing Mode</span>
-                        </div>
-                        <div class="erp-card-body p-3 bg-light">
-                            <div class="row gx-3 gy-3">
-                                <div class="col-lg-8">
-                                    <div class="bg-white border rounded p-3 shadow-sm h-100">
-                                        <table class="table table-borderless table-sm mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="compact-lbl compact-td" style="width: 15%;">BRANCH :</td>
-                                                    <td colspan="3" class="compact-td">
-                                                        <input type="text" class="compact-input shadow-sm text-secondary bg-light"
-                                                            style="max-width:300px; font-weight:600;"
-                                                            value="{{ strtoupper($sale->branch->name ?? 'N/A') }}" readonly>
-                                                        <input type="hidden" name="branch_id" value="{{ $sale->branch_id }}">
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="compact-lbl compact-td">SALE INVC #</td>
-                                                    <td class="text-secondary fw-bold compact-td" style="width: 35%;">
-                                                        <input type="text" name="invoice_no" readonly value="{{ $sale->invoice_no }}"
-                                                            class="bg-transparent border-0 text-secondary p-0 w-100 fw-bold" style="outline: none;">
-                                                    </td>
-                                                    <td class="compact-lbl text-end compact-td" style="width: 25%;">CUSTOMER REF #</td>
-                                                    <td style="width: 25%;" class="compact-td">
-                                                        <input type="text" name="vendor_bill_no" value="{{ $sale->vendor_bill_no }}" class="compact-input shadow-sm">
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="compact-lbl compact-td">ORDER DATE :</td>
-                                                    <td class="compact-td">
-                                                        <input type="date" name="purchase_date" value="{{ $sale->sale_date }}" class="compact-input shadow-sm text-secondary" style="max-width: 200px;">
-                                                    </td>
-                                                    <td class="compact-lbl text-end compact-td">ORDER #</td>
-                                                    <td class="compact-td">
-                                                        <input type="text" name="order_no" value="{{ $sale->order_no }}" class="compact-input shadow-sm">
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="compact-lbl compact-td">SO #</td>
-                                                    <td class="text-secondary compact-td">
-                                                        <input type="text" name="sale_order_no" value="{{ $sale->sale_order_no }}" class="bg-transparent border-0 text-secondary p-0 w-100" style="outline: none;">
-                                                    </td>
-                                                    <td class="compact-lbl text-end compact-td">SO DATE :</td>
-                                                    <td class="compact-td">
-                                                        <input type="date" name="so_date" value="{{ $sale->so_date }}" class="compact-input shadow-sm text-secondary">
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="compact-lbl compact-td">PROJECT :</td>
-                                                    <td class="compact-td">
-                                                        <select name="project" class="compact-select text-secondary shadow-sm">
-                                                            <option value="">(N/A)</option>
-                                                        </select>
-                                                    </td>
-                                                    <td class="compact-lbl text-end compact-td">JOB # / REF</td>
-                                                    <td class="compact-td">
-                                                        <input type="text" name="reference" value="{{ $sale->reference }}" class="compact-input shadow-sm">
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                    <!-- Order Information (2-Row Compact Grid) -->
+                    <div class="qb-card p-2 mb-1">
+                        <input type="hidden" name="branch_id" value="{{ $sale->branch_id }}">
+                        <input type="hidden" id="warehouse_id_header" value="1">
+
+                        <!-- Row 1 -->
+                        <div class="row gx-2 gy-1">
+                            <!-- Customer Account -->
+                            <div class="col-md-3">
+                                <label class="qb-lbl">Customer Account</label>
+                                <div class="input-group input-group-sm">
+                                    <button type="button" class="btn btn-select-modal" data-toggle="modal" data-target="#customerModal" title="Select Customer">
+                                        <i class="bi bi-person-fill text-success"></i>
+                                    </button>
+                                    <input type="hidden" name="customer" id="customer_id" value="{{ $sale->customer_id }}">
+                                    <input type="text" id="customer_name_display"
+                                        class="form-control qb-input qb-input-name fw-bold" readonly
+                                        placeholder="Select Customer" data-toggle="modal" data-target="#customerModal"
+                                        value="{{ $sale->customer_relation->customer_name ?? 'Select Customer' }}">
                                 </div>
+                            </div>
 
-                                <div class="col-lg-4">
-                                    <div class="bg-white border rounded p-3 shadow-sm h-100 d-flex flex-column">
-                                        <div class="form-group mb-3">
-                                            <label class="form-label" style="font-size: 11px;">CUSTOMER ACCOUNT</label>
-                                            <div class="input-group shadow-sm">
-                                                <button type="button" class="btn input-group-text bg-light border-end-0" data-toggle="modal" data-target="#customerModal">
-                                                    <i class="bi bi-person text-primary fs-5"></i>
-                                                </button>
-                                                <input type="hidden" name="customer" id="customer_id" value="{{ $sale->customer_id }}">
-                                                <input type="text" id="customer_name_display" class="form-control border-start-0 ps-0 fw-bold bg-white text-dark" readonly
-                                                    data-toggle="modal" data-target="#customerModal" style="cursor: pointer;"
-                                                    value="{{ $sale->customer_relation->customer_name ?? 'Select Customer' }}">
-                                            </div>
-                                        </div>
+                            <!-- Sales Officer -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Sales Officer</label>
+                                <div class="input-group input-group-sm">
+                                    <button type="button" class="btn btn-select-modal" data-toggle="modal" data-target="#officerModal" title="Select Sales Officer">
+                                        <i class="bi bi-person-badge text-primary"></i>
+                                    </button>
+                                    <input type="hidden" name="sales_officer_id" id="sales_officer_id" value="{{ $sale->employee_id }}">
+                                    <input type="text" id="sales_officer_display"
+                                        class="form-control qb-input qb-input-name fw-bold" readonly
+                                        placeholder="Select Sales Officer" data-toggle="modal" data-target="#officerModal"
+                                        value="{{ $sale->salesOfficer->name ?? 'Select Sales Officer' }}">
+                                </div>
+                            </div>
 
-                                        <div class="form-group mb-3">
-                                            <label class="form-label" style="font-size: 11px;">SALES OFFICER</label>
-                                            <div class="input-group shadow-sm">
-                                                <button type="button" class="btn input-group-text bg-light border-end-0" data-toggle="modal" data-target="#officerModal">
-                                                    <i class="bi bi-person-badge text-primary fs-5"></i>
-                                                </button>
-                                                <input type="hidden" name="sales_officer_id" id="sales_officer_id" value="{{ $sale->employee_id }}">
-                                                <input type="text" id="sales_officer_display" class="form-control border-start-0 ps-0 fw-bold bg-white text-dark" readonly
-                                                    data-toggle="modal" data-target="#officerModal" style="cursor: pointer;"
-                                                    value="{{ $sale->employee->full_name ?? 'Select Sales Officer' }}">
-                                            </div>
-                                        </div>
+                            <!-- Sale Invc # -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Invoice #</label>
+                                <input type="text" name="sale_no" readonly value="{{ $sale->invoice_no }}" class="form-control qb-input font-monospace fw-bold text-dark bg-light">
+                            </div>
 
-                                        <div class="form-group mb-3">
-                                            <label class="form-label" style="font-size: 11px;">COMMISSION %</label>
-                                            <div class="input-group shadow-sm">
-                                                <span class="input-group-text bg-light border-end-0">
-                                                    <i class="bi bi-percent text-success fs-6"></i>
-                                                </span>
-                                                <input type="number" step="0.01" min="0" max="100" name="commission_percentage" id="commission_percentage"
-                                                    class="form-control border-start-0 ps-2 fw-bold text-dark" placeholder="Enter % (e.g. 1.00)" 
-                                                    value="{{ $sale->commission_percentage !== null ? floatval($sale->commission_percentage) : '' }}">
-                                            </div>
-                                            <small class="text-muted" style="font-size: 10px;">Applied on amount net of GST (18%) & Sale Tax (5%)</small>
-                                        </div>
+                            <!-- Invoice Date -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Invoice Date</label>
+                                <input type="date" id="purchase_date_input" name="purchase_date" value="{{ \Carbon\Carbon::parse($sale->created_at)->toDateString() }}" class="form-control qb-input">
+                            </div>
 
-                                        <div class="mt-auto bg-light p-3 rounded border">
-                                            <div class="form-check form-switch d-flex align-items-center gap-2 mb-2">
-                                                <input class="form-check-input mt-0" type="checkbox" id="gst_invoice" name="is_gst_invoice" checked style="width: 2.2em; height: 1.1em; cursor:pointer;">
-                                                <label class="form-check-label fw-bold text-dark compact-lbl" for="gst_invoice">GST INVOICE</label>
-                                            </div>
-                                            <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
-                                                <input class="form-check-input mt-0" type="checkbox" id="enable_hs_code" name="enable_hs_code" checked style="width: 2.2em; height: 1.1em; cursor:pointer;">
-                                                <label class="form-check-label fw-bold text-dark compact-lbl" for="enable_hs_code">ENABLE HS CODE</label>
-                                            </div>
-                                            <div class="text-muted mt-2" style="font-size: 11px; font-weight: 600;">
-                                                STATUS: <span class="text-danger">DRAFT / UN-POSTED</span>
-                                            </div>
-                                        </div>
-                                        <input type="hidden" id="warehouse_id_header" value="1">
-                                    </div>
+                            <!-- Cust Ref / DC # -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Cust Ref / DC #</label>
+                                <input type="text" name="vendor_bill_no" value="{{ $sale->vendor_bill_no }}" class="form-control qb-input" placeholder="Ref / DC">
+                            </div>
+
+                            <!-- DC Date -->
+                            <div class="col-md-1">
+                                <label class="qb-lbl">DC Date</label>
+                                <input type="date" id="dc_date_input" name="dc_date" value="{{ $sale->dc_date ? \Carbon\Carbon::parse($sale->dc_date)->toDateString() : '' }}" class="form-control qb-input">
+                            </div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="row gx-2 gy-1 mt-1 align-items-center">
+                            <!-- SO # -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">SO #</label>
+                                <input type="text" name="sale_order_no" class="form-control qb-input" value="{{ $sale->sale_order_no ?? '000000' }}">
+                            </div>
+
+                            <!-- SO Date -->
+                            <div class="col-md-1">
+                                <label class="qb-lbl">SO Date</label>
+                                <input type="date" id="so_date_input" name="so_date" value="{{ $sale->so_date ? \Carbon\Carbon::parse($sale->so_date)->toDateString() : date('Y-m-d') }}" class="form-control qb-input">
+                            </div>
+
+                            <!-- Order # -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Order #</label>
+                                <input type="text" name="order_no" class="form-control qb-input" value="{{ $sale->order_no }}" placeholder="Order #">
+                            </div>
+
+                            <!-- Job # / Ref -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Job # / Ref</label>
+                                <input type="text" name="reference" class="form-control qb-input" value="{{ $sale->reference }}" placeholder="Job / Ref">
+                            </div>
+
+                            <!-- Project -->
+                            <div class="col-md-2">
+                                <label class="qb-lbl">Project</label>
+                                <select name="project" class="form-select qb-select">
+                                    <option value="">(N/A)</option>
+                                    @if(isset($projects))
+                                        @foreach($projects as $p)
+                                            <option value="{{ $p->id }}" {{ $sale->project_id == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+
+                            <!-- Commission % -->
+                            <div class="col-md-1">
+                                <label class="qb-lbl">Comm %</label>
+                                <input type="number" step="0.01" min="0" max="100" name="commission_percentage" id="commission_percentage" class="form-control qb-input fw-bold" value="{{ $sale->commission_percentage ?? '' }}" placeholder="0.00">
+                            </div>
+
+                            <!-- Checkboxes & Status -->
+                            <div class="col-md-2">
+                                <div class="d-flex align-items-center justify-content-between pt-3" style="gap: 4px;">
+                                    <label class="qb-check-pill" title="GST Invoice">
+                                        <input type="checkbox" id="gst_invoice" name="is_gst_invoice" {{ $sale->is_gst_invoice ? 'checked' : '' }}>
+                                        <span>GST</span>
+                                    </label>
+                                    <label class="qb-check-pill" title="Enable HS Code">
+                                        <input type="checkbox" id="enable_hs_code" name="enable_hs_code" value="1" {{ $sale->enable_hs_code ? 'checked' : '' }}>
+                                        <span>HS Code</span>
+                                    </label>
+                                    <span class="qb-status-pill">{{ strtoupper($sale->sale_status ?? 'DRAFT') }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- MAIN TABLE AREA -->
-                    <div class="erp-card mt-2">
-                        <div class="erp-card-header d-flex justify-content-between align-items-center" style="padding-bottom: 1rem; border-bottom: none;">
-                            <h3 class="erp-card-title"><i class="bi bi-boxes text-primary"></i> Product Line Items</h3>
-                            <button type="button" class="btn-erp btn-erp-primary" id="btnAddRow" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                    <!-- Product Line Items Grid -->
+                    <div class="qb-card p-2 mb-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="qb-section-title"><i class="bi bi-boxes text-success"></i> Product Line Items</span>
+                                <small class="text-muted" style="font-size: 10px;">(Press Enter on any field to add new row)</small>
+                            </div>
+                            <button type="button" class="qb-btn-add-line" id="btnAddRow">
                                 <i class="bi bi-plus-lg"></i> Add New Row
                             </button>
                         </div>
-                        <div class="erp-card-body pt-0">
-                            <div class="erp-table-wrapper" style="overflow-x: auto;">
-                                @php
-                                    $allUnits = \App\Models\Unit::pluck('name')->toArray();
-                                    $defaultUoms = ['KG', 'Piece', 'Number', 'Pack', 'Box', 'Carton', 'Dozen', 'Meter', 'Liter', 'Pair', 'Set', 'Roll', 'Bag', 'Bottle', 'Vial', 'Kit'];
-                                    $uomList = array_unique(array_merge($defaultUoms, $allUnits));
-                                @endphp
-                                <datalist id="uom_datalist">
-                                    @foreach($uomList as $uName)
-                                        <option value="{{ $uName }}">
-                                    @endforeach
-                                </datalist>
-                                <table class="erp-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width:120px">Item Code</th>
-                                            <th style="width:145px" class="hs-code-col text-center">HS Code</th>
-                                            <th style="min-width:320px">Product</th>
-                                            <th style="min-width:150px">Packing</th>
-                                            <th style="width:100px" class="text-center">UOM</th>
-                                            <th style="width:80px" class="text-center">Packet</th>
-                                            <th style="min-width:100px" class="text-end">Box Qty</th>
-                                            <th style="min-width:80px" class="text-end">Loose</th>
-                                            <th style="min-width:90px" class="text-end">Free Pcs</th>
-                                            <th style="min-width:120px" class="text-end">Rate</th>
-                                            <th style="min-width:180px" class="text-end">Discount</th>
-                                            <th style="min-width:150px" class="text-end">Sub Total</th>
-                                            <th style="min-width:130px" class="text-end">GST %</th>
-                                            <th style="min-width:130px" class="text-end">IncTax</th>
-                                            <th style="min-width:130px" class="text-end">advTax</th>
-                                            <th style="min-width:160px" class="text-end">Net Total</th>
-                                            @if ($sale->sale_status != 'booked')
-                                                <th style="min-width:220px">Batch</th>
-                                                <th style="min-width:150px">Lot#</th>
-                                            @endif
-                                            <th style="width:120px" class="text-end">Cost/PC</th>
-                                            <th style="width:60px; text-align:center;">Del</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="saleItems">
-                                        @foreach($sale->items as $index => $item)
-                                            @php
-                                                $prod = $item->product;
-                                                $ppb = $item->pieces_per_box > 0 ? $item->pieces_per_box : ($prod->pieces_per_box > 0 ? $prod->pieces_per_box : 1);
-                                                $sizeMode = $item->size_mode ?? ($prod->size_mode ?? 'by_cartons');
-                                                
-                                                // Format Qty: Boxes.Pieces
-                                                $boxes = floor($item->total_pieces / $ppb);
-                                                $remPieces = $item->total_pieces % $ppb;
-                                                $qtyDisp = ($remPieces > 0) ? "$boxes.$remPieces" : $boxes;
 
-                                                $freeTotal = $item->free_total_pieces ?? 0;
-                                            @endphp
-                                            <tr class="item-row">
-                                                <td>
-                                                    <input type="hidden" name="product_id[]" class="item-id" value="{{ $item->product_id }}">
-                                                    <input type="hidden" name="warehouse_id[]" class="item-warehouse row-input" value="{{ $item->warehouse_id }}">
-                                                    <input type="text" name="item_code[]" class="form-control bg-transparent border-0 px-0 item-code" readonly value="{{ $prod->item_code }}">
-                                                </td>
-                                                <td class="hs-code-col">
-                                                    <div class="input-group input-group-sm" style="min-width: 130px;">
-                                                        <input type="text" name="hs_code[]" class="form-control text-center hs-code item-hs-code" style="font-size:11px; padding:2px 4px; background:#fff;" value="{{ $item->hs_code }}" placeholder="HS Code">
-                                                        <button type="button" class="btn btn-outline-primary btn-quick-hs px-2" onclick="window.openQuickHsModalForBtn && window.openQuickHsModalForBtn(this)" title="Quick Update Product HS Code" style="padding: 2px 7px;">
-                                                            <i class="bi bi-plus-lg"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td style="font-weight:600; color:#334155;">
-                                                    <input type="hidden" name="item_name[]" class="item-name" value="{{ $prod->item_name }}">
-                                                    <button type="button" class="product-select-btn has-value">
-                                                        {{ $prod->item_name }} <br>
-                                                        <small class="text-muted" style="font-size:0.7rem; font-weight:400;">{{ $prod->item_code }}</small>
-                                                        <span class="psm-btn-arrow">&#9660;</span>
-                                                    </button>
-                                                </td>
-                                                <td>
-                                                    <select name="pieces_per_box[]" class="form-select packing-select" style="min-width:130px;">
-                                                        <option value="{{ $item->uom_id }}" data-factor="{{ $ppb }}" selected>{{ $ppb > 1 ? '1x' . (int)$ppb : $item->uom_name }}</option>
-                                                    </select>
-                                                    <input type="hidden" name="packing_id[]" class="packing-id" value="{{ $item->uom_id }}">
-                                                    <input type="hidden" name="uom_id[]" class="uom-id" value="{{ $item->uom_id }}">
-                                                    <input type="hidden" name="item_uom_factor[]" class="item_uom_factor" value="{{ $ppb }}">
-                                                    <input type="hidden" name="size_mode[]" class="size-mode" value="{{ $sizeMode }}">
-                                                </td>
-                                                <td>
-                                                    <input type="text" name="item_uom[]" list="uom_datalist" class="form-control text-center uom-input row-input" style="min-width:85px;" value="{{ $item->uom_name ?: ($item->product->unit->name ?? 'Piece') }}" placeholder="UOM">
-                                                </td>
-                                                <td class="text-center">
-                                                    <input type="number" name="pcs_per_box_display[]" class="form-control text-center item-uom" value="{{ $ppb }}" readonly style="width:60px; background:#f8fafc;">
-                                                </td>
-                                                <td><input type="number" name="qty[]" class="form-control quantity text-end fw-bold row-input" style="background:#eff6ff;" value="{{ $boxes }}"></td>
-                                                <td><input type="number" name="loose_pieces[]" class="form-control loose_pieces text-end row-input" value="{{ $remPieces }}"></td>
-                                                <td><input type="number" name="free_loose_pieces[]" class="form-control free_loose_pieces text-end row-input" value="{{ $freeTotal }}"></td>
-                                                <td><input type="number" step="0.01" name="price[]" class="form-control price text-end row-input" value="{{ $item->price }}"></td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="hidden" name="item_disc_type[]" class="item-disc-type" value="percent">
-                                                        <input type="number" step="0.01" name="item_disc[]" class="form-control item_disc text-end row-input" value="{{ $item->discount_percent }}">
-                                                        <button class="btn btn-outline-info toggle-type" type="button" data-type="percent">%</button>
-                                                    </div>
-                                                </td>
-                                                <td><input type="text" name="sub_total[]" class="form-control row-sub-total text-end" readonly value="{{ $item->total }}"></td>
-                                                <td>
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" step="0.01" name="gst[]" class="form-control gst text-end row-input" value="{{ $item->gst_percent ?? 0 }}">
-                                                        <span class="input-group-text p-1" style="font-size:0.7rem;">%</span>
-                                                    </div>
-                                                    <input type="hidden" name="gst_amount[]" class="gst-amount-row" value="{{ $item->gst_amount ?? 0 }}">
-                                                </td>
-                                                <td><input type="number" step="0.01" name="inc_tax[]" class="form-control inc-tax text-end row-input" value="{{ $item->incTax ?? 0 }}"></td>
-                                                <td><input type="number" step="0.01" name="adv_tax[]" class="form-control adv-tax text-end row-input" value="{{ $item->advTax ?? 0 }}"></td>
-                                                <td><input type="text" name="total[]" class="form-control row-net-total input-highlight text-end" readonly value="{{ $item->total + ($item->gst_amount ?? 0) + ($item->incTax ?? 0) + ($item->advTax ?? 0) }}"></td>
-                                                @if ($sale->sale_status != 'booked')
-                                                    <td>
-                                                        <select name="batch_id[]" class="form-select batch-select2 row-input" style="width:100%">
-                                                            <option value="">Auto (FEFO)</option>
-                                                            @if($item->batch_id)
-                                                                <option value="{{ $item->batch_id }}" selected>{{ $item->batch_relation->batch_number ?? 'B-'.$item->batch_id }}</option>
-                                                            @endif
-                                                        </select>
-                                                    </td>
-                                                    <td><input type="text" name="lot_no[]" class="form-control text-center row-input lot-no-display" value="{{ $item->batch_relation->batch_number ?? '' }}" readonly></td>
-                                                @endif
-                                                <td><input type="text" name="cost_per_pc[]" class="form-control row-cost-pc text-end" readonly></td>
-                                                <td style="text-align:center;">
-                                                    <button type="button" class="btn-erp-danger-ghost remove-row"><i class="bi bi-x-circle-fill"></i></button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="qb-table-scroll">
+                            @php
+                                $allUnits = \App\Models\Unit::pluck('name')->toArray();
+                                $defaultUoms = ['KG', 'Piece', 'Number', 'Pack', 'Box', 'Carton', 'Dozen', 'Meter', 'Liter', 'Pair', 'Set', 'Roll', 'Bag', 'Bottle', 'Vial', 'Kit'];
+                                $uomList = array_unique(array_merge($defaultUoms, $allUnits));
+                            @endphp
+                            <datalist id="uom_datalist">
+                                @foreach($uomList as $uName)
+                                    <option value="{{ $uName }}">
+                                @endforeach
+                            </datalist>
+                            <table class="erp-table qb-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:85px">Item Code</th>
+                                        <th style="width:115px" class="hs-code-col text-center">HS Code</th>
+                                        <th style="min-width:210px">Product</th>
+                                        <th style="width:115px">Packing</th>
+                                        <th style="width:75px" class="text-center">UOM</th>
+                                        <th style="width:55px" class="text-center">Packet</th>
+                                        <th style="width:75px" class="text-end">Box Qty</th>
+                                        <th style="width:65px" class="text-end">Loose</th>
+                                        <th style="width:65px" class="text-end">Free Pcs</th>
+                                        <th style="width:85px" class="text-end">Rate</th>
+                                        <th style="width:110px" class="text-end">Discount</th>
+                                        <th style="width:95px" class="text-end">Sub Total</th>
+                                        <th style="width:70px" class="text-end">GST %</th>
+                                        <th style="width:75px" class="text-end">IncTax</th>
+                                        <th style="width:80px" class="text-end">advTax</th>
+                                        <th style="width:105px" class="text-end">Net Total</th>
+                                        @if ($sale->sale_status != 'booked')
+                                            <th style="width:120px">Batch</th>
+                                            <th style="width:90px">Lot#</th>
+                                        @endif
+                                        <th style="width:80px" class="text-end">Cost/PC</th>
+                                        <th style="width:36px; text-align:center;">Del</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="saleItems">
+
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- BOTTOM AREA -->
-                    <div class="row">
-                        <div class="col-xl-8 col-lg-7">
-                            <div class="erp-card mb-4">
-                                <div class="erp-card-header">
-                                    <h3 class="erp-card-title"><i class="bi bi-wallet2 text-primary"></i> Setup & Payments</h3>
-                                </div>
-                                <div class="erp-card-body">
-                                    <div class="row">
-                                        <div class="col-md-6 form-group">
-                                            <label class="form-label">Delivered By / Transport</label>
-                                            <input type="text" name="transport_name" class="form-control" value="{{ $sale->transport_name }}" placeholder="Vehicle info">
+                    <!-- Bottom Section (Setup & Payments + Financial Summary) -->
+                    <div class="row gx-2 mt-1">
+                        <!-- Setup & Payments -->
+                        <div class="col-lg-6 col-xl-6">
+                            <div class="qb-card h-100 p-2 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                                        <span class="qb-section-title"><i class="bi bi-wallet2 text-success"></i> Setup &amp; Payments</span>
+                                        <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size:9.5px;">Logistics &amp; Voucher</span>
+                                    </div>
+                                    <div class="row gx-2 gy-1 mb-2">
+                                        <div class="col-6">
+                                            <label class="qb-lbl">Delivered By / Transport</label>
+                                            <input type="text" name="transport_name" class="form-control qb-input" value="{{ $sale->transport_name }}" placeholder="Courier / driver / vehicle">
                                         </div>
-                                        <div class="col-md-6 form-group">
-                                            <label class="form-label">Sale Remarks</label>
-                                            <input type="text" name="note" class="form-control" value="{{ $sale->note }}" placeholder="Notes">
+                                        <div class="col-6">
+                                            <label class="qb-lbl">Sale Remarks</label>
+                                            <input type="text" name="note" class="form-control qb-input" value="{{ $sale->note }}" placeholder="Any internal notes or terms">
                                         </div>
                                     </div>
-                                    
-                                    @if ($sale->sale_status != 'booked')
-                                        <hr class="my-4" style="border-color: #e2e8f0; border-style: dashed;">
-                                        <h5 class="fw-bold mb-3" style="font-size:0.95rem;">Payment Assignments</h5>
-                                        <div id="paymentWrapper">
-                                            @php
-                                                $displayPayments = [];
-                                                if($sale->payments && $sale->payments->count() > 0) {
-                                                    foreach($sale->payments as $p) {
-                                                        $displayPayments[] = (object)['account_id' => $p->account_id, 'amount' => $p->amount];
-                                                    }
-                                                } elseif(!empty($sale->payment_details)) {
-                                                    foreach($sale->payment_details as $pd) {
-                                                        $displayPayments[] = (object)['account_id' => $pd['account_id'], 'amount' => $pd['amount']];
-                                                    }
-                                                }
-                                            @endphp
 
-                                            @foreach($displayPayments as $payment)
-                                                <div class="d-flex gap-2 align-items-center mb-2 payment-row">
-                                                    <div class="input-group" style="max-width:350px;">
-                                                        <select class="form-select rv-account" name="payment_account_id[]">
-                                                            @foreach ($accounts as $acc)
-                                                                <option value="{{ $acc->id }}" {{ $payment->account_id == $acc->id ? 'selected' : '' }}>{{ $acc->title }}</option>
-                                                            @endforeach
-                                                        </select>
+                                    @if ($sale->sale_status != 'booked')
+                                        <div class="pt-2 border-top mt-1">
+                                            <div class="p-2 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <label class="qb-lbl mb-0">Payment Voucher Assignment</label>
+                                                    <span class="badge" style="background:#ecfdf5; color:#065f46; font-weight:700; font-size:10.5px; border:1px solid #a7f3d0;" id="totalPaid">Rs. 0.00</span>
+                                                </div>
+                                                <div id="paymentWrapper">
+                                                    @php
+                                                        $displayPayments = [];
+                                                        if($sale->payments && $sale->payments->count() > 0) {
+                                                            foreach($sale->payments as $p) {
+                                                                $displayPayments[] = (object)['account_id' => $p->account_id, 'amount' => $p->amount];
+                                                            }
+                                                        } elseif(!empty($sale->payment_details)) {
+                                                            foreach($sale->payment_details as $pd) {
+                                                                $displayPayments[] = (object)['account_id' => $pd['account_id'], 'amount' => $pd['amount']];
+                                                            }
+                                                        }
+                                                    @endphp
+
+                                                    @foreach($displayPayments as $payment)
+                                                        <div class="d-flex gap-1 align-items-center mb-1 payment-row">
+                                                            <div class="input-group input-group-sm" style="flex:1;">
+                                                                <select class="form-select rv-account qb-input" name="payment_account_id[]" style="font-size:11px;">
+                                                                    @foreach ($accounts as $acc)
+                                                                        <option value="{{ $acc->id }}" {{ $payment->account_id == $acc->id ? 'selected' : '' }}>{{ $acc->title }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="input-group input-group-sm" style="width:115px;">
+                                                                <span class="input-group-text bg-light p-1 fw-bold" style="font-size:10px; border-color:#cbd5e1;">Rs.</span>
+                                                                <input type="number" class="form-control text-end payment-amount qb-input" name="payment_amount[]" value="{{ $payment->amount }}" style="font-size:11px;">
+                                                            </div>
+                                                            <button type="button" class="btn btn-erp-danger-ghost remove-payment"><i class="bi bi-trash"></i></button>
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="d-flex gap-1 align-items-center mb-1 payment-row">
+                                                        <div class="input-group input-group-sm" style="flex:1;">
+                                                            <span class="input-group-text bg-light p-1" style="font-size:11px; border-color:#cbd5e1;"><i class="bi bi-bank"></i></span>
+                                                            <select class="form-select rv-account qb-input" name="payment_account_id[]" style="font-size:11px;">
+                                                                <option value="" selected disabled>Select Payment Account</option>
+                                                                @foreach ($accounts as $acc)
+                                                                    <option value="{{ $acc->id }}">{{ $acc->title }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="input-group input-group-sm" style="width:115px;">
+                                                            <span class="input-group-text bg-light p-1 fw-bold" style="font-size:10px; border-color:#cbd5e1;">Rs.</span>
+                                                            <input type="number" class="form-control text-end payment-amount qb-input" name="payment_amount[]" placeholder="0.00" style="font-size:11px;">
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm rounded px-2" id="btnAddPayment" style="height:26px; padding:0 10px; font-size:11px; background:#0f172a; color:#fff; border:none;">
+                                                            <i class="bi bi-plus-lg"></i> Add
+                                                        </button>
                                                     </div>
-                                                    <div class="input-group" style="max-width:180px;">
-                                                        <span class="input-group-text bg-light fw-bold">Rs.</span>
-                                                        <input type="number" class="form-control text-end payment-amount" name="payment_amount[]" value="{{ $payment->amount }}">
-                                                    </div>
-                                                    <button type="button" class="btn btn-erp-danger-ghost remove-payment"><i class="bi bi-trash"></i></button>
                                                 </div>
-                                            @endforeach
-                                            <div class="d-flex gap-2 align-items-center mb-2 payment-row">
-                                                <div class="input-group" style="max-width:350px;">
-                                                    <select class="form-select rv-account" name="payment_account_id[]">
-                                                        <option value="" selected disabled>Select Payment Account</option>
-                                                        @foreach ($accounts as $acc)
-                                                            <option value="{{ $acc->id }}">{{ $acc->title }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="input-group" style="max-width:180px;">
-                                                    <input type="number" class="form-control text-end payment-amount" name="payment_amount[]" placeholder="0.00">
-                                                </div>
-                                                <button type="button" class="btn btn-erp-primary rounded px-3" id="btnAddPayment"><i class="bi bi-plus-lg"></i> Add</button>
                                             </div>
                                         </div>
                                     @endif
                                 </div>
+
+                                <div class="pt-1 border-top mt-1 d-flex justify-content-between align-items-center">
+                                    <label class="qb-check-pill" style="cursor: pointer;">
+                                        <input type="checkbox" id="printPreview" name="print_preview" value="1" checked>
+                                        <span>Auto Print Receipt</span>
+                                    </label>
+                                    <small class="text-muted" style="font-size: 10px;">Press F2 to Quick Post</small>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="erp-card sticky-top" style="top: 20px;">
-                                <div class="erp-card-header bg-primary text-white" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
-                                    <h3 class="erp-card-title text-white"><i class="bi bi-calculator text-info"></i> Financial Summary</h3>
-                                </div>
-                                <div class="erp-card-body" style="background: #f8fafc;">
-                                    <div class="summary-row">
-                                        <span class="summary-label">Total Qty</span>
-                                        <span class="fw-bold text-primary" id="summary_total_qty">0</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label">Gross Total</span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 summary-value" id="gross_total" readonly value="{{ number_format($sale->total_bill_amount, 2) }}">
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label text-danger">Line Discounts</span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 summary-value text-danger" id="total_row_disc" readonly value="0.00">
-                                    </div>
-                                    <div class="summary-row py-2">
-                                        <span class="summary-label">Additional Bill Discount</span>
-                                        <div class="input-group input-group-sm w-50">
-                                            <input type="number" step="0.01" class="form-control text-end" id="sum_discount" name="discount" value="{{ $sale->total_extradiscount }}">
-                                            <input type="hidden" name="discount_type" id="sum_discount_type" value="amount">
-                                            <button class="btn btn-outline-secondary toggle-type" type="button" data-type="amount">Rs</button>
+                        <!-- Financial Summary -->
+                        <div class="col-lg-6 col-xl-6">
+                            <div class="qb-card qb-summary-card h-100 p-2 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                                        <span class="qb-section-title"><i class="bi bi-calculator text-success"></i> Financial Summary</span>
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <span class="badge" style="background:#f1f5f9; border:1px solid #e2e8f0; color:#0f172a; font-size:10px;" id="summary_total_qty">{{ $sale->total_qty ?? 0 }} Pcs</span>
+                                            <span class="badge" style="background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; font-size:10px;" id="summary_total_free_qty">{{ $sale->free_pieces ?? '—' }}</span>
                                         </div>
                                     </div>
-                                    <div class="summary-row bg-white p-2 rounded border mb-2">
-                                        <span class="summary-label fw-bold">Post-Disc Sub Total</span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 fw-bold text-dark" id="summary_sub_total" readonly value="0.00">
+
+                                    <!-- 2-Column Ledger -->
+                                    <div class="row gx-2 gy-0 mb-1">
+                                        <div class="col-6">
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl">Gross Total:</span>
+                                                <input type="text" class="qb-ledger-val" id="gross_total" readonly tabindex="-1" value="{{ $sale->gross_total }}">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl text-danger">Prod Disc:</span>
+                                                <input type="text" class="qb-ledger-val text-danger" id="total_row_disc" readonly tabindex="-1" value="0.00">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl">Bill Disc:</span>
+                                                <div class="d-flex align-items-center gap-1" style="width: 100px;">
+                                                    <input type="number" step="0.01" id="sum_discount" name="discount" class="form-control form-control-sm text-end qb-ledger-input" value="{{ $sale->order_discount ?? 0.00 }}">
+                                                    <input type="hidden" name="discount_type" id="sum_discount_type" value="amount">
+                                                    <button class="btn btn-outline-secondary toggle-type p-0 px-1" type="button" data-type="amount" style="height: 20px; font-size: 9px; line-height: 18px; border-color:#cbd5e1;">Rs</button>
+                                                </div>
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl fw-bold text-dark">Sub Total:</span>
+                                                <input type="text" class="qb-ledger-val fw-bold text-dark" name="subtotal" id="summary_sub_total" readonly tabindex="-1" value="{{ $sale->subtotal }}">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl">Freight:</span>
+                                                <input type="number" class="form-control form-control-sm text-end qb-ledger-input input_summary" name="freight_charges" id="sum_freight" value="{{ $sale->freight_charges ?? 0.00 }}" style="width: 80px;">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl">Bilti Exp:</span>
+                                                <input type="number" class="form-control form-control-sm text-end qb-ledger-input input_summary" name="extra_cost" id="sum_expense" value="{{ $sale->extra_cost ?? 0.00 }}" style="width: 80px;">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl text-success">GST (+):</span>
+                                                <input type="text" class="qb-ledger-val text-success fw-bold" id="total_gst" readonly tabindex="-1" value="{{ $sale->total_gst ?? 0.00 }}">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl fw-bold text-dark">Invoice Total:</span>
+                                                <input type="text" class="qb-ledger-val fw-bold text-dark" id="invoice_total" readonly tabindex="-1" value="{{ $sale->invoice_total ?? $sale->net_total }}">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl text-danger">WHT (-):</span>
+                                                <input type="text" class="qb-ledger-val text-danger" id="total_inc_tax" readonly tabindex="-1" value="{{ $sale->total_inc_tax ?? 0.00 }}">
+                                            </div>
+                                            <div class="qb-ledger-row">
+                                                <span class="qb-ledger-lbl text-success">Adv Tax (+):</span>
+                                                <input type="text" class="qb-ledger-val text-success" id="total_adv_tax" readonly tabindex="-1" value="{{ $sale->total_adv_tax ?? 0.00 }}">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label text-success fw-bold">Total GST <small>(Added ➕)</small></span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 summary-value text-success" id="total_gst" readonly value="0.00">
+
+                                    <!-- Obsidian Slate Net Payable Box -->
+                                    <div class="qb-net-box">
+                                        <div class="d-flex flex-column">
+                                            <span class="qb-net-title">NET PAYABLE AMOUNT</span>
+                                            <small style="font-size: 8.5px; color: #94a3b8; letter-spacing: 0.3px;">TOTAL INCLUDING TAXES</small>
+                                        </div>
+                                        <div class="d-flex align-items-baseline gap-1">
+                                            <span class="qb-currency">PKR</span>
+                                            <input type="text" class="qb-net-amount" id="final_net_total" name="net_amount" readonly tabindex="-1" value="{{ $sale->net_total }}">
+                                        </div>
                                     </div>
-                                    <div class="summary-row" style="border-top:1px dashed #e2e8f0; padding-top:6px; margin-top:4px;">
-                                        <span class="summary-label fw-bold text-dark">Invoice Total</span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 fw-bold text-dark" id="invoice_total" readonly value="0.00">
+
+                                    <!-- In Words -->
+                                    <div class="d-flex align-items-center gap-1 mb-1 mt-1" style="font-size: 10px;">
+                                        <span class="text-muted text-nowrap">In Words:</span>
+                                        <input type="text" name="total_amount_Words" id="amountInWords" class="form-control-plaintext py-0 px-1 fw-bold text-secondary text-truncate" readonly tabindex="-1" value="Zero Rupees" style="font-size: 10px; height: 16px;">
                                     </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label text-danger">Income Tax (WHT) <small>(Deducted ➖)</small></span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 summary-value text-danger" id="total_inc_tax" readonly value="0.00">
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label text-success fw-bold">Advance Tax <small>(Added ➕)</small></span>
-                                        <input type="text" class="form-control form-control-sm text-end w-50 bg-transparent border-0 summary-value text-success fw-bold" id="total_adv_tax" readonly value="0.00">
-                                    </div>
-                                    <div class="summary-row py-2">
-                                        <span class="summary-label">Freight Charges</span>
-                                        <input type="number" step="0.01" class="form-control form-control-sm text-end w-50 input_summary" name="freight_charges" id="sum_freight" value="{{ $sale->freight_charges ?? 0 }}">
-                                    </div>
-                                    <div class="summary-row py-2">
-                                        <span class="summary-label">Expenses</span>
-                                        <input type="number" step="0.01" class="form-control form-control-sm text-end w-50 input_summary" name="extra_cost" id="sum_expense" value="{{ $sale->extra_cost ?? 0 }}">
-                                    </div>
-                                    <div class="summary-total-row d-flex justify-content-between align-items-center">
-                                        <span class="summary-total-label">NET PAYABLE</span>
-                                        <input type="text" name="total_net" id="final_net_total" class="bg-transparent border-0 text-end summary-total-value w-50" readonly value="{{ number_format($sale->total_net, 2) }}">
-                                    </div>
-                                    
-                                    <div class="mt-4 d-flex flex-column gap-2">
-                                        <button type="button" id="btnSaveOnly" class="btn-sale-action btn-sale-draft">
-                                            <i class="bi bi-save fs-6"></i> Update Draft
-                                        </button>
-                                        <button type="button" id="btnConfirm" class="btn-sale-action btn-sale-confirm">
-                                            <i class="bi bi-check2-circle fs-6"></i> Confirm & Post SIN
-                                        </button>
-                                        <button type="button" id="btnPostToFbr" 
-                                            class="btn-sale-action btn-sale-fbr {{ $sale->fbr_status === 'posted' ? 'is-posted' : '' }}" 
-                                            data-sale-id="{{ $sale->id }}"
-                                            {{ ($sale->sale_status !== 'post' || $sale->fbr_status === 'posted') ? 'disabled' : '' }}>
-                                            @if($sale->fbr_status === 'posted')
-                                                <i class="bi bi-check-circle-fill text-success fs-6"></i> FBR Posted ({{ $sale->fbr_invoice_no }})
-                                            @else
-                                                <i class="bi bi-cloud-arrow-up-fill fs-6"></i> POST TO FBR
-                                            @endif
-                                        </button>
-                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-1 align-items-center mt-1">
+                                    <button type="button" class="btn qb-btn-post w-100" id="btnConfirm" style="{{ $sale->sale_status == 'booked' ? 'display:none;' : '' }}">
+                                        <i class="bi bi-check2-circle"></i> Update &amp; Post Sale
+                                    </button>
+                                    <button type="button" class="btn qb-btn-draft w-100" id="btnSaveOnly" style="{{ $sale->sale_status != 'booked' ? 'display:none;' : '' }}">
+                                        <i class="bi bi-save2"></i> Update Sale Order (Draft)
+                                    </button>
+                                    <button type="button" id="btnPostToFbr" 
+                                        class="btn qb-btn-fbr {{ $sale->fbr_status === 'posted' ? 'is-posted' : '' }}" 
+                                        data-sale-id="{{ $sale->id }}"
+                                        {{ ($sale->sale_status !== 'post' || $sale->fbr_status === 'posted') ? 'disabled' : '' }} style="white-space: nowrap;">
+                                        @if($sale->fbr_status === 'posted')
+                                            <i class="bi bi-check-circle-fill text-success fs-6"></i> FBR Posted ({{ $sale->fbr_invoice_no }})
+                                        @else
+                                            <i class="bi bi-cloud-arrow-up-fill fs-6"></i> POST TO FBR
+                                        @endif
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </form>
             </div>
         </div>
     </div>
-
     <!-- Modals -->
     @include('admin_panel.sale.sale_receipt_note.modals')
     @include('admin_panel.components.product_select_modal')
@@ -1056,7 +1149,7 @@
                         <td>
                             <input type="hidden" name="product_id[]" class="item-id">
                             <input type="hidden" name="warehouse_id[]" class="item-warehouse" value="1">
-                            <input type="text" name="item_code[]" class="form-control bg-transparent border-0 px-0 item-code" readonly>
+                            <input type="text" name="item_code[]" class="form-control bg-transparent border-0 px-1 item-code text-muted font-monospace" placeholder="—" readonly style="font-size:11px;">
                         </td>
                         <td class="hs-code-col">
                             <div class="input-group input-group-sm" style="min-width: 130px;">

@@ -151,11 +151,16 @@ class FbrService
      */
     public static function getSellerDetails(): array
     {
+        $rawNtn = (string) SystemSetting::get('fbr_seller_ntn', 'E427507');
+        $cleanNtn = strtoupper(trim(preg_replace('/[^a-zA-Z0-9]/', '', $rawNtn)));
+
         return [
-            'sellerNTNCNIC'      => preg_replace('/[^0-9]/', '', SystemSetting::get('fbr_seller_ntn', '3520224331243')),
+            'sellerNTNCNIC'      => $cleanNtn,
             'sellerBusinessName' => SystemSetting::get('fbr_seller_name', 'THREE STARS MEDICAL SUPPLIES'),
             'sellerProvince'     => SystemSetting::get('fbr_seller_province', 'Punjab'),
             'sellerAddress'      => SystemSetting::get('fbr_seller_address', 'M17-M18 SAITH CENTRE SYED MOJ DARYA ROAD LAHORE'),
+            'businessNature'     => SystemSetting::get('fbr_business_nature', 'Distributor'),
+            'sector'             => SystemSetting::get('fbr_sector', 'Wholesale / Retails'),
         ];
     }
 
@@ -167,14 +172,14 @@ class FbrService
     public static function formatBuyerNtn(?string $rawNtn): string
     {
         if (empty($rawNtn)) return '';
-        $clean = preg_replace('/[^0-9]/', '', $rawNtn);
-        if (strlen($clean) === 8) {
+        $clean = strtoupper(trim(preg_replace('/[^a-zA-Z0-9]/', '', $rawNtn)));
+        if (strlen($clean) === 8 && ctype_digit($clean)) {
             return substr($clean, 0, 7);
         }
         if (strlen($clean) === 7) {
             return $clean;
         }
-        if (strlen($clean) >= 13) {
+        if (strlen($clean) >= 13 && ctype_digit($clean)) {
             return substr($clean, 0, 13);
         }
         return $clean;
@@ -277,7 +282,7 @@ class FbrService
 
             if (str_contains(strtolower($itemSaleType), '3rd schedule') || (!empty($retailPrice) && $retailPrice > 0 && $gstRateNum == 18)) {
                 // 3rd Schedule Goods
-                $saleType = ' 3rd Schedule Goods ';
+                $saleType = '3rd Schedule Goods';
                 $rateStr = '18%';
                 $retailPrice = ($retailPrice > 0) ? $retailPrice : $valExclSt;
                 $sroSchedule = '';
@@ -306,14 +311,14 @@ class FbrService
                 $lineScenario = $isRetailCustomer ? 'SN028' : 'SN005';
             } elseif ($gstRateNum == 25 || str_contains(strtolower($itemSaleType), '297')) {
                 // SRO 297(I)/2023
-                $saleType = 'Goods as per SRO.297(|)/2023';
+                $saleType = 'Goods as per SRO.297(I)/2023';
                 $rateStr = '25%';
                 $sroSchedule = '297(I)/2023-Table-I';
                 $sroSerial = !empty($sroSerial) ? $sroSerial : '12';
                 $lineScenario = 'SN024';
             } elseif (str_contains(strtolower($itemSaleType), 'service')) {
                 // Services
-                $saleType = ' Services ';
+                $saleType = 'Services';
                 $rateStr = '16%';
                 $sroSchedule = '';
                 $sroSerial = '';
@@ -377,6 +382,22 @@ class FbrService
 
         // Final Scenario selection
         $scenarioId = !empty($overrideScenario) ? $overrideScenario : ($detectedScenario ?? ($isRegistered ? 'SN001' : 'SN002'));
+
+        // If a specific scenario is enforced or chosen, align item saleType with that scenario's official standard
+        if (!empty($overrideScenario)) {
+            $master = self::getAllScenariosMaster();
+            if (isset($master[$overrideScenario])) {
+                $targetSaleType = $master[$overrideScenario]['saleType'];
+                foreach ($items as &$it) {
+                    $it['saleType'] = $targetSaleType;
+                    if (!empty($master[$overrideScenario]['sro'])) {
+                        $it['sroScheduleNo'] = $master[$overrideScenario]['sro'];
+                        $it['sroItemSerialNo'] = $master[$overrideScenario]['serial'];
+                    }
+                }
+                unset($it);
+            }
+        }
 
 
         // Fallback item if invoice has no lines
@@ -674,11 +695,333 @@ class FbrService
     /**
      * Get definitions of all 14 FBR Sandbox Scenarios required for production authorization
      */
+        /**
+     * Master registry of all 28 official FBR Digital Invoicing Scenarios (SN001 - SN028)
+     * Exact saleType strings and scenario titles as defined by FBR Iris / Sandbox.
+     */
+    public static function getAllScenariosMaster(): array
+    {
+        return [
+            'SN001' => [
+                'code'        => 'SN001',
+                'title'       => 'Goods at standard rate — registered buyer',
+                'saleType'    => 'Goods at standard rate (default)',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of standard rate goods (18%) to active registered buyers.',
+            ],
+            'SN002' => [
+                'code'        => 'SN002',
+                'title'       => 'Goods at standard rate — unregistered buyer',
+                'saleType'    => 'Goods at standard rate (default)',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of standard rate goods (18%) to unregistered buyers or walk-in consumers.',
+            ],
+            'SN003' => [
+                'code'        => 'SN003',
+                'title'       => 'Steel melting and re-rolling',
+                'saleType'    => 'Steel melting and re-rolling',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Steel'],
+                'natures'     => ['Manufacturer'],
+                'description' => 'Supplies by steel melters and re-rollers.',
+            ],
+            'SN004' => [
+                'code'        => 'SN004',
+                'title'       => 'Sale by ship breakers',
+                'saleType'    => 'Ship breaking',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Steel'],
+                'natures'     => ['Manufacturer'],
+                'description' => 'Sale of ship plates and scrap by ship breakers.',
+            ],
+            'SN005' => [
+                'code'        => 'SN005',
+                'title'       => 'Reduced rate sale (Eighth Schedule)',
+                'saleType'    => 'Goods at Reduced Rate',
+                'rate'        => '1%',
+                'sro'         => 'EIGHTH SCHEDULE Table 1',
+                'serial'      => '70',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of goods subject to reduced rates under Eighth Schedule.',
+            ],
+            'SN006' => [
+                'code'        => 'SN006',
+                'title'       => 'Exempt goods sale (Sixth Schedule)',
+                'saleType'    => 'Exempt goods',
+                'rate'        => 'Exempt',
+                'sro'         => '6th Schd Table I',
+                'serial'      => '100',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of unconditionally exempt goods under Sixth Schedule Table 1.',
+            ],
+            'SN007' => [
+                'code'        => 'SN007',
+                'title'       => 'Zero-rated sale',
+                'saleType'    => 'Goods at zero-rate',
+                'rate'        => '0%',
+                'sro'         => 'FIFTH SCHEDULE',
+                'serial'      => '10',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Exporter', 'Manufacturer'],
+                'description' => 'Zero-rated supplies governed under Fifth Schedule of Sales Tax Act.',
+            ],
+            'SN008' => [
+                'code'        => 'SN008',
+                'title'       => 'Third Schedule goods (retail price taxation)',
+                'saleType'    => '3rd Schedule Goods',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails', 'FMCG'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of 3rd Schedule items taxed on retail price (MRP).',
+            ],
+            'SN009' => [
+                'code'        => 'SN009',
+                'title'       => 'Cotton Spinners purchase from Cotton Ginners',
+                'saleType'    => 'Draft — no template currently published',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Textile'],
+                'natures'     => ['Manufacturer'],
+                'description' => 'Draft scenario for cotton procurement by textile spinning mills.',
+            ],
+            'SN010' => [
+                'code'        => 'SN010',
+                'title'       => 'Telecom services rendered or provided',
+                'saleType'    => 'Telecommunication services',
+                'rate'        => '19.5%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Telecom'],
+                'natures'     => ['Service Provider'],
+                'description' => 'Telecommunication and bandwidth services under FED/Sales tax.',
+            ],
+            'SN011' => [
+                'code'        => 'SN011',
+                'title'       => 'Toll manufacturing — steel sector',
+                'saleType'    => 'Toll Manufacturing',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Steel'],
+                'natures'     => ['Manufacturer'],
+                'description' => 'Job work / toll conversion charges for steel sector clients.',
+            ],
+            'SN012' => [
+                'code'        => 'SN012',
+                'title'       => 'Sale of petroleum products',
+                'saleType'    => 'Petroleum Products',
+                'rate'        => '0%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Petroleum'],
+                'natures'     => ['Distributor', 'Wholesaler'],
+                'description' => 'Regulated petroleum products (POL) sales under special sales tax rates.',
+            ],
+            'SN013' => [
+                'code'        => 'SN013',
+                'title'       => 'Electricity supply to retailers (withholding involved)',
+                'saleType'    => 'Electricity Supply to Retailers',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Electricity Distribution'],
+                'natures'     => ['Service Provider', 'Distributor'],
+                'description' => 'DISCO billing to Tier-1/non-Tier-1 retailers with tax withholding.',
+            ],
+            'SN014' => [
+                'code'        => 'SN014',
+                'title'       => 'Sale of gas to CNG stations',
+                'saleType'    => 'Gas to CNG stations',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Gas Distribution', 'CNG Stations'],
+                'natures'     => ['Distributor'],
+                'description' => 'Bulk natural gas supplies to retail CNG dispensing stations.',
+            ],
+            'SN015' => [
+                'code'        => 'SN015',
+                'title'       => 'Sale of mobile phones (Ninth Schedule)',
+                'saleType'    => 'Mobile Phones',
+                'rate'        => 'Fixed',
+                'sro'         => 'NINTH SCHEDULE',
+                'serial'      => '1',
+                'sectors'     => ['Mobile', 'Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Importer', 'Wholesaler', 'Retailer'],
+                'description' => 'Cellular mobile phones taxed under fixed Sales Tax rates per Ninth Schedule.',
+            ],
+            'SN016' => [
+                'code'        => 'SN016',
+                'title'       => 'Processing / conversion of goods',
+                'saleType'    => 'Processing/Conversion of Goods',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Manufacturer', 'Service Provider'],
+                'description' => 'Services rendered for toll manufacturing, processing, or conversion of raw material.',
+            ],
+            'SN017' => [
+                'code'        => 'SN017',
+                'title'       => 'Goods where FED is charged in ST mode',
+                'saleType'    => 'Goods (FED in ST Mode)',
+                'rate'        => '17%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails', 'Petroleum', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Manufacturer', 'Importer'],
+                'description' => 'Goods subject to Federal Excise Duty collected under Sales Tax collection mechanism.',
+            ],
+            'SN018' => [
+                'code'        => 'SN018',
+                'title'       => 'Services where FED is charged in ST mode',
+                'saleType'    => 'Services (FED in ST Mode)',
+                'rate'        => '16%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Services', 'Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Service Provider'],
+                'description' => 'Services subject to FED in Sales Tax mode under Federal Excise Act.',
+            ],
+            'SN019' => [
+                'code'        => 'SN019',
+                'title'       => 'Services rendered or provided',
+                'saleType'    => 'Services',
+                'rate'        => '16%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Services', 'Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Service Provider'],
+                'description' => 'Taxable services governed by Islamabad ICT Sales Tax on Services Ordinance.',
+            ],
+            'SN020' => [
+                'code'        => 'SN020',
+                'title'       => 'Sale of electric vehicles',
+                'saleType'    => 'Electric Vehicle',
+                'rate'        => '1%',
+                'sro'         => 'EIGHTH SCHEDULE Table 1',
+                'serial'      => '73',
+                'sectors'     => ['Automobile'],
+                'natures'     => ['Distributor', 'Manufacturer', 'Importer'],
+                'description' => 'Supplies of 2-3 wheeler and 4-wheeler pure electric vehicles.',
+            ],
+            'SN021' => [
+                'code'        => 'SN021',
+                'title'       => 'Sale of cement / concrete block',
+                'saleType'    => 'Cement /Concrete Block',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Cement or Concrete Blocks'],
+                'natures'     => ['Manufacturer', 'Distributor'],
+                'description' => 'Cement bags and concrete blocks subject to FED and sales tax.',
+            ],
+            'SN022' => [
+                'code'        => 'SN022',
+                'title'       => 'Sale of potassium chlorate',
+                'saleType'    => 'Potassium Chlorate',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Potassium Chlorate'],
+                'natures'     => ['Manufacturer', 'Distributor', 'Importer'],
+                'description' => 'Regulated chemical supplies subject to special sales tax collection rules.',
+            ],
+            'SN023' => [
+                'code'        => 'SN023',
+                'title'       => 'Sale of CNG',
+                'saleType'    => 'CNG Sales',
+                'rate'        => 'Fixed',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['CNG Stations'],
+                'natures'     => ['Retailer'],
+                'description' => 'Retail compressed natural gas sales to vehicular consumers.',
+            ],
+            'SN024' => [
+                'code'        => 'SN024',
+                'title'       => 'Goods sold under SRO 297(I)/2023',
+                'saleType'    => 'Goods as per SRO.297(I)/2023',
+                'rate'        => '25%',
+                'sro'         => '297(I)/2023-Table-I',
+                'serial'      => '12',
+                'sectors'     => ['Wholesale / Retails', 'All Other Sectors'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Importer', 'Retailer'],
+                'description' => 'Supplies of luxury goods and high-rate commodities taxed at 25% GST.',
+            ],
+            'SN025' => [
+                'code'        => 'SN025',
+                'title'       => 'Drugs at fixed ST rate (Eighth Schedule)',
+                'saleType'    => 'Non-Adjustable Supplies',
+                'rate'        => '0%',
+                'sro'         => 'Eighth Schedule Table 1',
+                'serial'      => '81',
+                'sectors'     => ['Pharmaceuticals', 'Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Manufacturer', 'Importer'],
+                'description' => 'Registered pharmaceutical drugs and medicines under Eighth Schedule Serial 81.',
+            ],
+            'SN026' => [
+                'code'        => 'SN026',
+                'title'       => 'Retailer sale to end consumer — standard rate',
+                'saleType'    => 'Goods at standard rate (default)',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Retailer'],
+                'description' => 'Point-of-sale retail supplies of standard 18% goods to end consumers.',
+            ],
+            'SN027' => [
+                'code'        => 'SN027',
+                'title'       => 'Retailer sale to end consumer — 3rd Schedule',
+                'saleType'    => '3rd Schedule Goods',
+                'rate'        => '18%',
+                'sro'         => '',
+                'serial'      => '',
+                'sectors'     => ['Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Retailer'],
+                'description' => 'Retail supplies of Third Schedule printed retail price goods to walk-in consumers.',
+            ],
+            'SN028' => [
+                'code'        => 'SN028',
+                'title'       => 'Retailer sale to end consumer — reduced rate',
+                'saleType'    => 'Goods at Reduced Rate',
+                'rate'        => '1%',
+                'sro'         => 'EIGHTH SCHEDULE Table 1',
+                'serial'      => '70',
+                'sectors'     => ['Wholesale / Retails'],
+                'natures'     => ['Distributor', 'Wholesaler', 'Retailer'],
+                'description' => 'Retail supplies of Eighth Schedule reduced rate goods to end consumers.',
+            ],
+        ];
+    }
+
+    /**
+     * Get definitions of all Sandbox Scenarios matching Iris Distributor & Wholesale/Retails profile
+     * Required for production authorization.
+     */
     public static function getAllSandboxScenarios(): array
     {
         return [
             'SN001' => [
-                'title'     => 'Standard Rate Goods to Registered Buyers',
+                'title'     => 'Goods at standard rate — registered buyer',
                 'saleType'  => 'Goods at standard rate (default)',
                 'rate'      => '18%',
                 'val'       => 1000.0,
@@ -694,7 +1037,7 @@ class FbrService
                 'buyerReg'  => 'Registered',
             ],
             'SN002' => [
-                'title'     => 'Standard Rate Goods to Unregistered Buyers',
+                'title'     => 'Goods at standard rate — unregistered buyer',
                 'saleType'  => 'Goods at standard rate (default)',
                 'rate'      => '18%',
                 'val'       => 1000.0,
@@ -710,7 +1053,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN005' => [
-                'title'     => 'Reduced Rate Goods (Eighth Schedule)',
+                'title'     => 'Reduced rate sale (Eighth Schedule)',
                 'saleType'  => 'Goods at Reduced Rate',
                 'rate'      => '1%',
                 'val'       => 1000.0,
@@ -726,7 +1069,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN006' => [
-                'title'     => 'Exempt Goods (Sixth Schedule)',
+                'title'     => 'Exempt goods sale (Sixth Schedule)',
                 'saleType'  => 'Exempt goods',
                 'rate'      => 'Exempt',
                 'val'       => 1000.0,
@@ -742,7 +1085,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN007' => [
-                'title'     => 'Zero-Rated Goods (Fifth Schedule)',
+                'title'     => 'Zero-rated sale',
                 'saleType'  => 'Goods at zero-rate',
                 'rate'      => '0%',
                 'val'       => 1000.0,
@@ -758,8 +1101,8 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN008' => [
-                'title'     => 'Sale of 3rd Schedule Goods',
-                'saleType'  => ' 3rd Schedule Goods ',
+                'title'     => 'Third Schedule goods (retail price taxation)',
+                'saleType'  => '3rd Schedule Goods',
                 'rate'      => '18%',
                 'val'       => 1000.0,
                 'tax'       => 180.0,
@@ -773,8 +1116,24 @@ class FbrService
                 'buyerName' => 'Walk-in Consumer',
                 'buyerReg'  => 'Unregistered',
             ],
+            'SN015' => [
+                'title'     => 'Sale of mobile phones (Ninth Schedule)',
+                'saleType'  => 'Mobile Phones',
+                'rate'      => 'Fixed',
+                'val'       => 1000.0,
+                'tax'       => 100.0,
+                'retail'    => 0.0,
+                'fed'       => 0.0,
+                'sro'       => 'NINTH SCHEDULE',
+                'serial'    => '1',
+                'hs'        => '8517.1300',
+                'uom'       => 'Numbers, pieces, units',
+                'buyerNtn'  => '0000000000000',
+                'buyerName' => 'Walk-in Consumer',
+                'buyerReg'  => 'Unregistered',
+            ],
             'SN016' => [
-                'title'     => 'Processing / Conversion of Goods',
+                'title'     => 'Processing / conversion of goods',
                 'saleType'  => 'Processing/Conversion of Goods',
                 'rate'      => '18%',
                 'val'       => 1000.0,
@@ -790,7 +1149,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN017' => [
-                'title'     => 'Goods Subject to FED in ST Mode',
+                'title'     => 'Goods where FED is charged in ST mode',
                 'saleType'  => 'Goods (FED in ST Mode)',
                 'rate'      => '17%',
                 'val'       => 1000.0,
@@ -807,8 +1166,8 @@ class FbrService
                 'invoiceDate' => '2025-06-15',
             ],
             'SN018' => [
-                'title'     => 'Services Where FED Is Charged in ST Mode',
-                'saleType'  => ' Services (FED in ST Mode) ',
+                'title'     => 'Services where FED is charged in ST mode',
+                'saleType'  => 'Services (FED in ST Mode)',
                 'rate'      => '16%',
                 'val'       => 1000.0,
                 'tax'       => 160.0,
@@ -823,8 +1182,8 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN019' => [
-                'title'     => 'Services (as per ICT Ordinance)',
-                'saleType'  => ' Services ',
+                'title'     => 'Services rendered or provided',
+                'saleType'  => 'Services',
                 'rate'      => '16%',
                 'val'       => 1000.0,
                 'tax'       => 160.0,
@@ -839,8 +1198,8 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN024' => [
-                'title'     => 'Goods Listed in SRO 297(I)/2023',
-                'saleType'  => 'Goods as per SRO.297(|)/2023',
+                'title'     => 'Goods sold under SRO 297(I)/2023',
+                'saleType'  => 'Goods as per SRO.297(I)/2023',
                 'rate'      => '25%',
                 'val'       => 1000.0,
                 'tax'       => 250.0,
@@ -855,7 +1214,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN025' => [
-                'title'     => 'Drugs Sold at Fixed ST Rate (Serial 81)',
+                'title'     => 'Drugs at fixed ST rate (Eighth Schedule)',
                 'saleType'  => 'Non-Adjustable Supplies',
                 'rate'      => '0%',
                 'val'       => 1000.0,
@@ -871,7 +1230,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN026' => [
-                'title'     => 'Standard Rate Goods to End Consumers by Retailers',
+                'title'     => 'Retailer sale to end consumer — standard rate',
                 'saleType'  => 'Goods at standard rate (default)',
                 'rate'      => '18%',
                 'val'       => 1000.0,
@@ -887,8 +1246,8 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN027' => [
-                'title'     => '3rd Schedule Goods to End Consumers by Retailers',
-                'saleType'  => ' 3rd Schedule Goods ',
+                'title'     => 'Retailer sale to end consumer — 3rd Schedule',
+                'saleType'  => '3rd Schedule Goods',
                 'rate'      => '18%',
                 'val'       => 1000.0,
                 'tax'       => 180.0,
@@ -903,7 +1262,7 @@ class FbrService
                 'buyerReg'  => 'Unregistered',
             ],
             'SN028' => [
-                'title'     => 'Reduced Rate Goods to End Consumers by Retailers',
+                'title'     => 'Retailer sale to end consumer — reduced rate',
                 'saleType'  => 'Goods at Reduced Rate',
                 'rate'      => '1%',
                 'val'       => 1000.0,
@@ -922,7 +1281,7 @@ class FbrService
     }
 
     /**
-     * Run all 14 Sandbox Scenarios against FBR gateway (Validate or Post)
+     * Run all Sandbox Scenarios against FBR gateway (Validate or Post)
      */
     public static function runAllSandboxScenarios(bool $validateOnly = false): array
     {
@@ -1054,26 +1413,23 @@ class FbrService
     }
 
     /**
-     * Get list of all FBR Digital Invoicing scenarios for dropdowns
+     * Get list of FBR Digital Invoicing scenarios for dropdowns
+     * Filtered by Iris Business Nature and Sector if requested
      */
-    public static function getScenarios(): array
+    public static function getScenarios(bool $all = false): array
     {
-        return [
-            'SN001' => 'SN001: Sale of Standard Rate Goods to Registered Buyers',
-            'SN002' => 'SN002: Sale of Standard Rate Goods to Unregistered Buyers',
-            'SN005' => 'SN005: Sale of Reduced Rate Goods (Eighth Schedule)',
-            'SN006' => 'SN006: Sale of Exempt Goods (Sixth Schedule)',
-            'SN007' => 'SN007: Sale of Zero-Rated Goods (Fifth Schedule)',
-            'SN008' => 'SN008: Sale of 3rd Schedule Goods',
-            'SN016' => 'SN016: Processing / Conversion of Goods',
-            'SN018' => 'SN018: Services Where FED Is Charged in ST Mode',
-            'SN019' => 'SN019: Services (as per ICT Ordinance)',
-            'SN024' => 'SN024: Sale Of Goods Listed in SRO 297(I)/2023',
-            'SN025' => 'SN025: Drugs Sold at Fixed ST Rate Under Serial 81 Of Eighth Schedule Table 1',
-            'SN026' => 'SN026: Sale Of Goods at Standard Rate to End Consumers by Retailers',
-            'SN027' => 'SN027: Sale Of 3rd Schedule Goods to End Consumers by Retailers',
-            'SN028' => 'SN028: Sale Of Goods at Reduced Rate to End Consumers by Retailers',
-        ];
+        $master = self::getAllScenariosMaster();
+        $nature = (string) SystemSetting::get('fbr_business_nature', 'Distributor');
+        $sector = (string) SystemSetting::get('fbr_sector', 'Wholesale / Retails');
+
+        $options = [];
+        foreach ($master as $scId => $item) {
+            $isProfileMatch = in_array($nature, $item['natures']) || in_array($sector, $item['sectors']);
+            if ($all || $isProfileMatch) {
+                $options[$scId] = "{$scId}: {$item['title']} [{$item['saleType']}]";
+            }
+        }
+        return $options;
     }
 }
 

@@ -228,7 +228,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="scenarios-tab" data-toggle="tab" href="#tab-scenarios" role="tab">
-                        <i class="fas fa-check-circle mr-1 text-success"></i> Sandbox Scenarios <span class="badge badge-success badge-pill ml-1">14/14 Passed</span>
+                        <i class="fas fa-check-circle mr-1 text-success"></i> Sandbox Scenarios <span class="badge badge-success badge-pill ml-1">{{ count($sandboxScenarios) }}/{{ count($sandboxScenarios) }} Passed</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -298,20 +298,51 @@
                             </div>
                         </div>
 
-                        {{-- Section 3: Registered Seller Information --}}
+                        {{-- Section 3: Registered Seller Profile & Iris Classification --}}
                         <div class="section-label">
-                            <i class="fas fa-building text-primary"></i> Registered Seller Profile (Three Stars Medical)
+                            <i class="fas fa-building text-primary"></i> Registered Seller Profile & FBR Iris Classification
                         </div>
+
+                        {{-- Iris Nature & Sector Banner --}}
+                        <div class="p-2 mb-3 rounded border d-flex align-items-center justify-content-between flex-wrap" style="background: #f8fafc; border-color: #e2e8f0 !important;">
+                            <div class="d-flex align-items-center my-1">
+                                <span class="badge badge-primary px-2 py-1 mr-2" style="font-size: 0.78rem;">
+                                    <i class="fas fa-id-card mr-1"></i> NTN: {{ $sellerNtn }}
+                                </span>
+                                <span class="badge badge-info px-2 py-1 mr-2" style="font-size: 0.78rem;">
+                                    <i class="fas fa-check-square mr-1"></i> Nature: {{ $businessNature ?? 'Distributor' }}
+                                </span>
+                                <span class="badge badge-success px-2 py-1" style="font-size: 0.78rem;">
+                                    <i class="fas fa-store-alt mr-1"></i> Sector: {{ $sector ?? 'Wholesale / Retails' }}
+                                </span>
+                            </div>
+                            <div class="small text-muted my-1">
+                                <i class="fas fa-info-circle text-primary mr-1"></i> Configured per your official FBR Iris Registration
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-3 col-sm-6 compact-field">
                                 <label>Seller NTN / CNIC <span class="text-danger">*</span></label>
-                                <input type="text" name="fbr_seller_ntn" class="form-control font-monospace" value="{{ old('fbr_seller_ntn', $sellerNtn) }}" required>
+                                <input type="text" name="fbr_seller_ntn" class="form-control font-monospace" value="{{ old('fbr_seller_ntn', $sellerNtn) }}" placeholder="E427507" required>
                             </div>
-                            <div class="col-md-4 col-sm-6 compact-field">
-                                <label>Registered Business Name <span class="text-danger">*</span></label>
-                                <input type="text" name="fbr_seller_name" class="form-control" value="{{ old('fbr_seller_name', $sellerName) }}" required>
+                            <div class="col-md-3 col-sm-6 compact-field">
+                                <label>Business Nature (Iris) <span class="text-danger">*</span></label>
+                                <select name="fbr_business_nature" class="form-control form-select">
+                                    @foreach(['Distributor', 'Wholesaler', 'Retailer', 'Manufacturer', 'Importer', 'Exporter', 'Service Provider', 'Other'] as $nat)
+                                        <option value="{{ $nat }}" {{ ($businessNature ?? 'Distributor') === $nat ? 'selected' : '' }}>{{ $nat }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="col-md-2 col-sm-6 compact-field">
+                            <div class="col-md-3 col-sm-6 compact-field">
+                                <label>Sector (Sandbox / Live) <span class="text-danger">*</span></label>
+                                <select name="fbr_sector" class="form-control form-select">
+                                    @foreach(['Wholesale / Retails', 'Pharmaceuticals', 'FMCG', 'Mobile', 'Automobile', 'Services', 'Steel', 'Textile', 'Petroleum', 'All Other Sectors'] as $sec)
+                                        <option value="{{ $sec }}" {{ ($sector ?? 'Wholesale / Retails') === $sec ? 'selected' : '' }}>{{ $sec }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-sm-6 compact-field">
                                 <label>Province <span class="text-danger">*</span></label>
                                 <select name="fbr_seller_province" class="form-control form-select">
                                     @foreach(['Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 'Islamabad Capital Territory'] as $prov)
@@ -319,7 +350,11 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3 col-sm-6 compact-field">
+                            <div class="col-md-6 compact-field">
+                                <label>Registered Business Name <span class="text-danger">*</span></label>
+                                <input type="text" name="fbr_seller_name" class="form-control" value="{{ old('fbr_seller_name', $sellerName) }}" required>
+                            </div>
+                            <div class="col-md-6 compact-field">
                                 <label>Business Address <span class="text-danger">*</span></label>
                                 <input type="text" name="fbr_seller_address" class="form-control" value="{{ old('fbr_seller_address', $sellerAddress) }}" required>
                             </div>
@@ -387,13 +422,13 @@
                         <div class="col-md-3 col-6 mb-2">
                             <div class="p-2 rounded bg-light border text-center">
                                 <small class="text-muted d-block" style="font-size: 0.75rem;">Eligible Scenarios</small>
-                                <span class="font-weight-bold text-dark" style="font-size: 1.15rem;">14</span>
+                                <span class="font-weight-bold text-dark" style="font-size: 1.15rem;">{{ count($sandboxScenarios) }}</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-6 mb-2">
                             <div class="p-2 rounded bg-success-light border border-success text-center" style="background: #ecfdf5;">
                                 <small class="text-success d-block" style="font-size: 0.75rem;">Successful Scenarios</small>
-                                <span class="font-weight-bold text-success" id="statSuccessCount" style="font-size: 1.15rem;">14</span>
+                                <span class="font-weight-bold text-success" id="statSuccessCount" style="font-size: 1.15rem;">{{ count($sandboxScenarios) }}</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-6 mb-2">
@@ -413,11 +448,11 @@
                     {{-- Actions Bar --}}
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap" style="gap: 0.5rem;">
                         <span class="small font-weight-bold text-dark">
-                            <i class="fas fa-list-ol text-primary mr-1"></i> Official FBR Compliance Matrix (14 Wholesale/Retail Scenarios)
+                            <i class="fas fa-list-ol text-primary mr-1"></i> FBR Compliance Matrix ({{ count($sandboxScenarios) }} {{ $businessNature ?? "Distributor" }} & {{ $sector ?? "Wholesale/Retail" }} Scenarios)
                         </span>
                         <div>
                             <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 mr-1" id="btnValidateScenarios">
-                                <i class="fas fa-check-double mr-1"></i> Validate (14)
+                                <i class="fas fa-check-double mr-1"></i> Validate All ({{ count($sandboxScenarios) }})
                             </button>
                             <button type="button" class="btn btn-success btn-sm font-weight-bold py-1 px-2" id="btnRunScenarios">
                                 <i class="fas fa-paper-plane mr-1"></i> Retransmit All Scenarios
@@ -459,8 +494,55 @@
                         </table>
                     </div>
 
-                    <div class="alert alert-info small py-2 px-3 mb-0" style="font-size: 0.8rem;">
-                        <i class="fas fa-info-circle mr-1"></i> All 14 test scenarios have been approved by FBR. Your permanent live <b>Production Token</b> is active under the <b>API Configuration</b> tab.
+                    <div class="alert alert-info small py-2 px-3 mb-3" style="font-size: 0.8rem;">
+                        <i class="fas fa-info-circle mr-1"></i> All {{ count($sandboxScenarios) }} test scenarios matching your <b>{{ $businessNature ?? 'Distributor' }}</b> & <b>{{ $sector ?? 'Wholesale/Retails' }}</b> profile are calibrated with FBR. Your live <b>Production Token</b> is active.
+                    </div>
+
+                    {{-- Collapsible Complete 28 FBR Official Scenarios Master Registry --}}
+                    <div class="card border mb-1">
+                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                            <a class="text-dark font-weight-bold small text-decoration-none" data-toggle="collapse" href="#collapseAllMasterScenarios" role="button">
+                                <i class="fas fa-database text-primary mr-1"></i> View Complete FBR 28 Scenarios Master Registry (SN001 - SN028)
+                                <span class="badge badge-primary ml-1">All 28</span>
+                            </a>
+                            <span class="small text-muted">Official exact saleType strings</span>
+                        </div>
+                        <div class="collapse" id="collapseAllMasterScenarios">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped table-compact m-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th style="width: 70px;">SN</th>
+                                                <th>Scenario Title</th>
+                                                <th>saleType String (Exact)</th>
+                                                <th>Tax Rate</th>
+                                                <th>Applicable Sectors</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($allScenariosMaster ?? [] as $code => $mSc)
+                                                @php
+                                                    $isUserMatch = in_array($businessNature ?? 'Distributor', $mSc['natures']) || in_array($sector ?? 'Wholesale / Retails', $mSc['sectors']);
+                                                @endphp
+                                                <tr class="{{ $isUserMatch ? 'table-success' : '' }}">
+                                                    <td class="font-monospace font-weight-bold">{{ $code }}</td>
+                                                    <td>
+                                                        {{ $mSc['title'] }}
+                                                        @if($isUserMatch)
+                                                            <span class="badge badge-success ml-1" style="font-size: 0.7rem;"><i class="fas fa-check"></i> {{ $businessNature ?? 'Distributor' }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td><code>{{ $mSc['saleType'] }}</code></td>
+                                                    <td><span class="badge badge-secondary">{{ $mSc['rate'] }}</span></td>
+                                                    <td class="small text-muted">{{ implode(', ', $mSc['sectors']) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -590,7 +672,7 @@
         function executeScenarios(validateOnly) {
             const actionText = validateOnly ? 'Validating' : 'Posting';
             Swal.fire({
-                title: `${actionText} 14 Scenarios...`,
+                title: `${actionText} Scenarios...`,
                 html: '<p class="text-muted">Communicating with FBR Gateway...</p>',
                 allowOutsideClick: false,
                 showConfirmButton: false,
@@ -632,7 +714,7 @@
 
                     Swal.fire({
                         icon: data.is_all_pass ? 'success' : 'warning',
-                        title: data.is_all_pass ? 'All 14 Scenarios Certified!' : `${data.successful}/${data.total} Scenarios Passed`,
+                        title: data.is_all_pass ? `All ${data.total} Scenarios Certified!` : `${data.successful}/${data.total} Scenarios Passed`,
                         html: `<p class="font-weight-bold">${data.message}</p>`
                     });
                 } else {

@@ -73,7 +73,7 @@ window.FbrPostManager = {
         if (data.scenarios) {
             Object.keys(data.scenarios).forEach(key => {
                 const isSelected = (key === data.detected_scenario) ? 'selected' : '';
-                scenarioOptions += `<option value="${key}" ${isSelected}>[${key}] ${data.scenarios[key]}</option>`;
+                scenarioOptions += `<option value="${key}" ${isSelected}>${data.scenarios[key]}</option>`;
             });
         }
 
@@ -88,7 +88,11 @@ window.FbrPostManager = {
         const modalHtml = `
             <div class="text-start" style="font-size: 0.88rem;">
                 <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                    <span class="fw-bold text-dark">FBR Digital Invoicing Gateway</span>
+                    <div>
+                        <span class="fw-bold text-dark">FBR Digital Invoicing</span>
+                        <span class="badge bg-light text-secondary border ms-1" style="font-size: 0.72rem;"><i class="fas fa-id-card me-1"></i>${data.seller.sellerNTNCNIC}</span>
+                        <span class="badge bg-light text-primary border ms-1" style="font-size: 0.72rem;">${data.business_nature || 'Distributor'}</span>
+                    </div>
                     ${envBadge}
                 </div>
 

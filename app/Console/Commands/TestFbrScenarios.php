@@ -21,7 +21,7 @@ class TestFbrScenarios extends Command
      *
      * @var string
      */
-    protected $description = 'Run and transmit all 14 required FBR Sandbox test scenarios to unlock the Production Security Token';
+    protected $description = 'Run and transmit all required FBR Sandbox test scenarios to unlock the Production Security Token';
 
     /**
      * Execute the console command.
@@ -30,19 +30,23 @@ class TestFbrScenarios extends Command
     {
         $validateOnly = $this->option('validate');
         $action = $validateOnly ? 'Validating' : 'Posting';
+        $scenarios = FbrService::getAllSandboxScenarios();
+        $totalCount = count($scenarios);
 
         $this->info("==========================================================================");
-        $this->info(" FBR DIGITAL INVOICING - 14 SCENARIOS TEST RUNNER ({$action})");
+        $this->info(" FBR DIGITAL INVOICING - {$totalCount} SCENARIOS TEST RUNNER ({$action})");
         $this->info("==========================================================================");
 
         $seller = FbrService::getSellerDetails();
-        $this->line("Seller NTN:  <comment>{$seller['sellerNTNCNIC']}</comment>");
-        $this->line("Seller Name: <comment>{$seller['sellerBusinessName']}</comment>");
-        $this->line("Endpoint:    <comment>" . ($validateOnly ? FbrService::getValidateUrl() : FbrService::getPostUrl()) . "</comment>");
+        $this->line("Seller NTN:      <comment>{$seller['sellerNTNCNIC']}</comment>");
+        $this->line("Business Nature: <comment>{$seller['businessNature']}</comment>");
+        $this->line("Sector:          <comment>{$seller['sector']}</comment>");
+        $this->line("Seller Name:     <comment>{$seller['sellerBusinessName']}</comment>");
+        $this->line("Endpoint:        <comment>" . ($validateOnly ? FbrService::getValidateUrl() : FbrService::getPostUrl()) . "</comment>");
         $this->newLine();
 
-        $this->info("Executing 14 scenarios against FBR Gateway...");
-        $bar = $this->output->createProgressBar(14);
+        $this->info("Executing {$totalCount} scenarios against FBR Gateway...");
+        $bar = $this->output->createProgressBar($totalCount);
         $bar->start();
 
         $res = FbrService::runAllSandboxScenarios($validateOnly);
@@ -76,7 +80,7 @@ class TestFbrScenarios extends Command
         $this->newLine();
         if ($res['is_all_pass']) {
             $this->info("==========================================================================");
-            $this->info(" ALL 14 SCENARIOS PASSED SUCCESSFULLY ({$res['successful']}/{$res['total']})!");
+            $this->info(" ALL {$res['total']} SCENARIOS PASSED SUCCESSFULLY ({$res['successful']}/{$res['total']})!");
             $this->info(" Your FBR Sandbox environment is fully certified.");
             $this->info(" You can now generate your Production Security Token on the FBR Portal.");
             $this->info("==========================================================================");
